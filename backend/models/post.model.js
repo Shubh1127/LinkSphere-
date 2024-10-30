@@ -42,6 +42,6 @@ const postSchema=mongoose.Schema({
 
    
 })
-const post=mongoose.model("post",postSchema)
+const post=mongoose.model("Post",postSchema)
 
 export default post
