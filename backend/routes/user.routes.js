@@ -1,7 +1,7 @@
 import {Router} from 'express'
 import multer from 'multer'
 
-import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData } from '../controllers/user.controllers.js';
+import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData,getAllUserProfile } from '../controllers/user.controllers.js';
 
 const router=Router();
 const storage = multer.diskStorage({
@@ -37,6 +37,10 @@ router.route('/get_user_and_profile')
 router
 .route("/update_profile_data")
 .post(updatePofileData)
+
+router.route("/user/get_all_users").get(getAllUserProfile)
+
+router.route("/user/download_resume")
 
 export default router
 

@@ -2,10 +2,10 @@ POST http://localhost:8080/register HTTP/1.1
 content-Type: application/json
 
 {
-    "username":"shubh1127",
+    "username":"shubh1223",
     "password":"hello",
-    "email":"shubhamsinghmor2312@gmail.com",
-    "name":"shubham"
+    "email":"shubhamsinghmor@gmail.com",
+    "name":"test"
 }
 
 ###
@@ -14,7 +14,7 @@ content-Type: application/json
     Content-Type: application/json
 
     {
-        "email":"shubhamsinghmor2312@gmail.com",
+        "email":"shubhamsinghmor@gmail.com",
         "password":"hello"
     }
 ###
@@ -23,7 +23,7 @@ content-Type: application/json
     Content-Type: application/json
 
     {
-       "token": "7e73ac51201444cd75d8b227ce75fa51a6773b25745eb9cd3d7022e5ef747f06"
+       "token": "126b488f99354c947970c9844912bbcd385249f201bf755e21067c7d8e55655f"
     }
 ###
 
@@ -49,3 +49,9 @@ content-Type: application/json
         }
        ]
     }
+
+###
+
+    GET http://localhost:8080/user/get_all_users 
+
+ 
