@@ -114,9 +114,33 @@ export const getUserAndProfile =async(req,res)=>{
         if(!user){
             return res.status(404).json({message:"user not found"})
         }
+         const userProfile=await Profile.findOne({userId:user._id})
+         .populate('userId','name email username profilePicture');
+
+         return res.json(userProfile)
 
 
-    }catch(err){p
+    }catch(err){
         return res.josn({message:err.message})
+    }
+}
+
+export const updatePofileData=async(req,res)=>{
+    try{
+         const {token,...newPofileData}=req.body;
+         const userProfile=await User.findOne({token:token});
+         if(!userProfile){
+            return res.status(404).json({message:"User not found"})
+         }
+         const profile_to_update=await Profile.findOne({userId:userProfile._id})
+
+         Object.assign(profile_to_update,newPofileData)
+
+         await profile_to_update.save();
+
+         return res.status(200).json({message:"Profile updated"})
+
+    }catch(err){
+        return res.json({message:err.message})
     }
 }

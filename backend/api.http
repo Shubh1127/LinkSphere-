@@ -17,3 +17,35 @@ content-Type: application/json
         "email":"shubhamsinghmor2312@gmail.com",
         "password":"hello"
     }
+###
+
+    GET http://localhost:8080/get_user_and_profile HTTP/1.1
+    Content-Type: application/json
+
+    {
+       "token": "7e73ac51201444cd75d8b227ce75fa51a6773b25745eb9cd3d7022e5ef747f06"
+    }
+###
+
+    POST http://localhost:8080/update_profile_data HTTP/1.1
+    Content-Type: application/json
+
+    {
+       "token": "7e73ac51201444cd75d8b227ce75fa51a6773b25745eb9cd3d7022e5ef747f06",
+       "bio":"Web developer",
+       "currentPost":"CTO",
+       "pastWork":[
+        {
+            "company":"Microsoft",
+            "position":"CTO",
+            "years":"2+"
+        }
+       ],
+       "education":[
+        {
+            "school":"IIT",
+            "degree":"B.Tech",
+            "fieldofStudy":"2015-2019"
+        }
+       ]
+    }
