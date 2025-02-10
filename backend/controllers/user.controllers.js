@@ -14,6 +14,11 @@ const convertUserDataTOPDF= (userData)=>{
 
     doc.pipe(stream)
     doc.image(`uplaods/${userData.userId.profilePicture}`,{align:"center",width:100})
+    doc.fontSize(14).text(`Name: ${userData.userId.name}`)
+    doc.fontSize(14).text(`Username: ${userData.userId.username}`)
+    doc.fontSize(14).text(`Email: ${userData.userId.email}`)
+    doc.fontSize(14).text(`Bio: ${userData.bio}`)
+    doc.fontSize(14).text(`Current Postion: ${userData.currentPostion}`)
 }
 
 export const register=async(req,res)=>{
