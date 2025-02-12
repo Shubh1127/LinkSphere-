@@ -21,7 +21,7 @@ const start = async () => {
     if (connect) {
       app.listen(port, () => {
         console.log("server started at port :" + port);
-        console.log("connected to db");
+        console.log("connected to database");
       });
     }
   } catch (error) {
