@@ -23,7 +23,7 @@ content-Type: application/json
     Content-Type: application/json
 
     {
-       "token": "126b488f99354c947970c9844912bbcd385249f201bf755e21067c7d8e55655f"
+       "token": "95854dce25bbe895be3e477ebe38b42fbe090701a4c4e5232cf0aff655b96716"
     }
 ###
 
@@ -31,7 +31,7 @@ content-Type: application/json
     Content-Type: application/json
 
     {
-       "token": "7e73ac51201444cd75d8b227ce75fa51a6773b25745eb9cd3d7022e5ef747f06",
+       "token": "87d609e6288d1940d7e13dd1dd1260a6aa6032ebd96e20c095e096faddd14463",
        "bio":"Web developer",
        "currentPost":"CTO",
        "pastWork":[
