@@ -1,6 +1,6 @@
 import User from "../models/user.model.js"
 import Profile from "../models/profile.model.js"
-import ConnectionRequest from "../models/connectionRequest.model.js"
+import ConnectionRequest from "../models/connections.model.js"
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import PDFDocument from 'pdfkit'
@@ -289,5 +289,4 @@ export const acceptConnectionRequest=async(req,res)=>{
     }catch(err){
         return res.json({message:err.message})
     }
-
 }
