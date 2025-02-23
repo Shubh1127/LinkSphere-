@@ -7,6 +7,10 @@ const commentsSchema=mongoose.Schema({
     postId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Post'
+    },
+    body:{
+        type:String,
+        required:true
     }
 })
 const Comment=mongoose.model("comments",commentsSchema)

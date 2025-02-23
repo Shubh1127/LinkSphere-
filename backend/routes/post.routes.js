@@ -18,5 +18,5 @@ router.route("/").get(activecheck)
 
 router.route("/post").post(upload.single('media'),createPost)
 router.route("/posts").get(getAllPost)
-
+router.route("/delete_post").delete(deletePost) 
 export default router;

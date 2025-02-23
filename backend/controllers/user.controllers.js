@@ -6,6 +6,8 @@ import crypto from 'crypto'
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import { send } from "process"
+import Post from "../models/post.model.js"
+import Comment from "../models/comments.model.js"
 
 const convertUserDataTOPDF = async (userData) => {
     const doc = new PDFDocument();
@@ -288,5 +290,40 @@ export const acceptConnectionRequest=async(req,res)=>{
         return res.json({message:"Connection request updated"})
     }catch(err){
         return res.json({message:err.message})
+    }
+}
+
+export const commentPost=async(req,res)=>{
+    try{
+        const {token,post_id,commentBody}=req.body;
+        const user=await User.findOne({token:token})
+        .select({_id});
+        if(!user){
+            return res.status(404).json({message:"User not found"})
+        }
+        const post=await Post.findOne({_id:post_id});
+        if(!post){
+            return res.status(404).json({message:"Post not found"})
+        }
+        const comment=new Comment({
+            userId:user._id,
+            postId:post_id,
+            body:commentBody
+        })
+        await comment.save();
+        return res.status(200).json({message:"Comment added"})
+    
+    }catch(err){
+        return res.status(500).json({message:err.message})
+    }
+}
+export const getAllComments=async(req,res)=>{
+    try{
+        const {post_id}=req.body;
+        const comments=await Comment.findO({postId:post_id})
+        .populate('userId','name email username profilePicture')
+        return res.status(200).json({comments})
+    }catch(err){
+        return res.status(500).json({message:err.message})
     }
 }
