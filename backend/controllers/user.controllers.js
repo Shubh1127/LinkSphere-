@@ -320,9 +320,24 @@ export const commentPost=async(req,res)=>{
 export const getAllComments=async(req,res)=>{
     try{
         const {post_id}=req.body;
-        const comments=await Comment.findO({postId:post_id})
+        const comments=await Comment.findOne({postId:post_id})
         .populate('userId','name email username profilePicture')
         return res.status(200).json({comments})
+    }catch(err){
+        return res.status(500).json({message:err.message})
+    }
+}
+export const deleteComment=async(req,res)=>{
+    try{
+        const {token,user_id}=req.body;
+        const user=await User.findOne({token:token})
+        .select({_id});
+        if(!user){
+            return res.status(404).json({message:"User not found"})
+        }
+        user._id.toString() !==user_id.toString() ? res.status(400).json({message:"You can't delete this comment"}):null;
+        await Comment.deleteOne({_id:user_id});
+        return res.status(200).json({message:"Comment deleted"})
     }catch(err){
         return res.status(500).json({message:err.message})
     }
