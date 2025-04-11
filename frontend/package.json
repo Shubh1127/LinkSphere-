@@ -9,15 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.5.1",
-    "axios": "^1.7.9",
-    "next": "15.0.2",
-    "react": "19.0.0-rc-02c0e824-20241028",
-    "react-dom": "19.0.0-rc-02c0e824-20241028",
+    "@reduxjs/toolkit": "^2.6.1",
+    "axios": "^1.8.4",
+    "next": "15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
-    "eslint": "^8",
-    "eslint-config-next": "15.0.2"
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.0",
+    "tailwindcss": "^4"
   }
 }
