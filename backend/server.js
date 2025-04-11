@@ -13,10 +13,10 @@ app.use(express.json());
 app.use(express.static('uploads'));
 app.use(postRoutes)
 app.use(userRoutes)
-const port = 8080;
+const port = 9090;
 const start = async () => {
   const connect = await mongoose.connect(
-    "mongodb+srv://shubhamsinghmor2312:Mummy4589@linkedinclone.utn0a.mongodb.net/?retryWrites=true&w=majority&appName=LinkedinClone"
+    process.env.MONGO_URL
   );
   try {
     if (connect) {
