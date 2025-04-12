@@ -5,7 +5,6 @@ import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
-import { send } from "process"
 import Post from "../models/post.model.js"
 import Comment from "../models/comments.model.js"
 
