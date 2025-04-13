@@ -1,4 +1,46 @@
 .container{
+    
     font-family: "Poppins";
     padding:1.2rem;
+    /* background: #000; */
+}
+.mainContainer{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap:4rem;
+    padding-inline: 2rem;
+    /* flex-direction: column; */
+    /* margin-top: 2rem; */
+}
+.mainContainer__left{
+    flex:0.5;
+    width: 50%;
+}
+
+.mainContainer__left > p:nth-child(1){
+    font-size: 2.9rem;
+    /* font-weight: 600; */
+    /* color: #000000; */
+}
+.mainContainer__right{
+    flex:0.5;
+}
+
+.mainContainer__left > div.buttonJoin{
+    width:fit-content;
+    cursor: pointer;
+    user-select: none;
+    transition:all 0.2s;
+    margin-top: 0.8rem;
+    border:2px solid black;
+    font-size:1.4rem;
+}
+
+.mainContainer__right img {
+    width: 50%;
+    height: 50%;
+    /* object-fit: cover; */
+    border-radius: 1rem;    
 }
