@@ -18,7 +18,7 @@ export default function Home() {
 
           <div onClick={()=>{
             router.push('/login');  
-          }} className="bg-purple-500 w-max p-2  rounded-[16px] mt-4 cursor-pointer hover:bg-purple-600 transition-all duration-300">
+          }} className="bg-purple-500 w-max p-2  rounded-[10px] mt-4 cursor-pointer hover:bg-purple-800 transition-all duration-300">
             <p className='text-white font-bold  '>Join Now</p>
           </div>
         </div>
