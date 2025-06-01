@@ -1,3 +1,4 @@
+import UserLayout from '@/layout/UserLayout/UserPage';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 // import Styles from '@/styles/Home.module.css'
@@ -5,7 +6,7 @@ import { useRouter } from 'next/router';
 export default function Home() {
   const router=useRouter();
   return (
-    <>
+    <UserLayout>
     <Head>
       <title>LinkSphere</title>
       <link rel='icon' href='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/LinkedIn_icon_circle.svg/1200px-LinkedIn_icon_circle.svg.png' />
@@ -27,6 +28,6 @@ export default function Home() {
         </div>
       </div>
     </div>
-    </>
+    </UserLayout>
   );
 }
