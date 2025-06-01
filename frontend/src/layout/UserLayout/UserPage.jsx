@@ -1,5 +1,5 @@
 import React from 'react'
-import NavbarComponent from '../../components/Navbar/NavbarPage';
+import NavbarComponent from '../../components/Navbar/NavbarPage.jsx';
 const UserLayout = ({children}) => {
   return (
     
