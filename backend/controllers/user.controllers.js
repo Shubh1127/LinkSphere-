@@ -69,7 +69,7 @@ export const register=async(req,res)=>{
             password:hashedPassword,
         })
         await newUser.save();
-        console.log(newUser)
+        // console.log(newUser)
         
         const profile=new Profile({
             userId:newUser._id,

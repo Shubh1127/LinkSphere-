@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser,registerUser } from "@/config/redux/action/authAction";
+import { emptyMessage } from "@/config/redux/reducer/authReducer";
 function LoginComponent() {
   const authState = useSelector((state) => state.auth);
   const router = useRouter();
@@ -14,6 +15,7 @@ function LoginComponent() {
   const[password,setPassword]=useState("");
   const[name,setName]=useState("");
   const[username,setUsername]=useState("");
+  const[message,setMessage]=useState("");
    
   useEffect(() => {
     if (authState.loggedIn) {
@@ -23,8 +25,26 @@ function LoginComponent() {
 
 
   const handleRegister=()=>{
-    console.log("Registering...")
-    dispatch(loginUser({username,name,email,password}))
+    console.log("registering user",username,name,email,password)
+      dispatch(registerUser({username,name,email,password}))
+      if(authState.message?.message=='User already exist'){
+        console.log("User already exist")
+        setIsLoginMethod(true);
+        setMessage("User already exist. Please Login.")
+      }
+   
+  }
+  useEffect(()=>{
+    console.log(authState.message?.message)
+    dispatch(emptyMessage());
+  },[isLoginMethod])
+  useEffect(()=>{
+    if(localStorage.getItem("token")){
+      router.push('/dashboard')
+    }
+  })
+  const handleLogin=()=>{
+    dispatch(loginUser({email,password}))
   }
   return (
     <UserLayout>
@@ -80,29 +100,60 @@ function LoginComponent() {
                 </div>
               </div>
               <div className="w-4/5">
-                <p  className={`text-center ${authState.isError? "text-red-500":"text-green-500"}`}>{authState.message.message}</p>
+              {
+                isLoginMethod?
+                <p  className={`text-center ${authState.isError? "text-red-500":"text-green-500"}`}>{message ||authState?.message?.message  }</p>
+                :
+                <p  className={`text-center ${authState.isError? "text-red-500":"text-green-500"}`}>{authState?.message?.message }</p>
+              }
               </div>
               <div>
-                <p className="text-blue-500 text-right w-4/5 cursor-pointer">Already have an account?</p>
+                {
+                  isLoginMethod ? 
+                  <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={()=>setIsLoginMethod(!isLoginMethod)}>Don't have an account?</p> 
+                  : 
+                  <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={()=>setIsLoginMethod(!isLoginMethod)}>Already have an account?</p>
+                }
               </div>
               <div>
-                <button
-                  className="bg-gray-200 cursor-pointer border-none   text-black  py-2 px-4 rounded-md  transition-all duration-300 mt-2 w-4/5"
-                  onClick={() => {
-                    setIsLoginMethod(!isLoginMethod),
-                    setEmail(""), 
-                    setPassword(""),
-                    setName(""),
-                    setUsername(""),
-                    handleRegister();
-                  }}
-                >
-                  {isLoginMethod ? "Sign In" : "Sign Up"}
-                </button>
+                {
+                  isLoginMethod ? 
+                  <button
+                    className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
+                    onClick={() => {
+                      setMessage(""),
+                      setEmail(""), 
+                      setPassword(""),
+                      handleLogin();
+                    }}
+                  >
+                    Sign In
+                  </button> 
+                  : 
+                  <button
+                    className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
+                    onClick={() => {
+                      setName(""),
+                      setUsername(""),
+                      setEmail(""), 
+                      setPassword(""),
+                      handleRegister();
+                    }}
+                  >
+                    Sign Up
+                  </button>
+                }
+                
               </div>
             </div>
           </div>
-          <div className=" h-full sm:w-1/3 bg-blue-800 rounded-r-md "></div>
+          <div className="w-full sm:w-1/3 bg-blue-800 rounded-r-md sm:block hidden">
+  <img
+    className="w-full h-full object-cover"
+    src="https://zdblogs.zohowebstatic.com/sites/social/journal/files/2021-04/linkedin-journal-illustration.png"
+    alt="Illustration"
+  />
+</div> 
         </div>
       </div>
     </UserLayout>
