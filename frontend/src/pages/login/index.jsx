@@ -27,7 +27,7 @@ function LoginComponent() {
   const handleRegister=()=>{
     console.log("registering user",username,name,email,password)
       dispatch(registerUser({username,name,email,password}))
-      if(authState.message?.message=='User already exist'){
+      if(authState.message?.message=='User already exists'){
         console.log("User already exist")
         setIsLoginMethod(true);
         setMessage("User already exist. Please Login.")
