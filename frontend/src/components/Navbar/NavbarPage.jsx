@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 const NavbarComponent = () => {
     const router=useRouter();
   return (
-    <div className='font-bold m-2 cursor-pointer' onClick={()=>{router.push('/')}}>Pro Connect</div>
+    <div className='font-bold m-3 cursor-pointer' onClick={()=>{router.push('/')}}>Pro Connect</div>
   );
 };
 
