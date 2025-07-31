@@ -11,23 +11,22 @@ export default function Home() {
       <title>WorkHive</title>
       <link rel='icon' href='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/LinkedIn_icon_circle.svg/1200px-LinkedIn_icon_circle.svg.png' />
     </Head>
-    <div className='' >
-      <div className=' h-screen flex justify-center items-center' >
-        <div className=' h-[50vh] flex flex-col justify-center text-[]   ps-12 left flex-1/2'>
-          <p className='text-[2rem] '>Connect with friends without Exaggeration</p>
-          <p className='text-xl'>A True social media platform, with stories no blufs !</p>
-
-          <div onClick={()=>{
-            router.push('/login');  
-          }} className="bg-purple-500 w-max p-2  rounded-[10px] mt-4 cursor-pointer hover:bg-purple-800 transition-all duration-300">
-            <p className='text-white font-bold  '>Join Now</p>
-          </div>
-        </div>
-        <div className='right flex-1/2 '>
-          <img className='h-[50vh]' src='https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/LinkedIn_icon_circle.svg/1200px-LinkedIn_icon_circle.svg.png' alt=''/>
-        </div>
+    <div>
+      <div>
+        
+        <p className='text-[4rem] bg-red-500 w-[40vw]'>Welcome to your professional community</p>
+      </div>
+      <div>
+        <div className='h-max border w-max p-1 rounded-2xl bg-blue-500 text-white '><span>google icon</span>Continue with Google</div>
+        <div className='h-max'>Sign in with email</div>
+        <p>By clicking Continue to join or sign in, you agree to LinkedIn’s User Agreement, Privacy Policy, and Cookie Policy.</p>
+      </div>
+      <div>
+        <button>New to WorkHive? <span className='text-blue-500 font-bold cursor-pointer hover:underline'>Join now</span></button>
       </div>
     </div>
+
+    
     </UserLayout>
   );
 }
