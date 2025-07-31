@@ -48,9 +48,9 @@ function LoginComponent() {
   }
   return (
     <UserLayout>
-      <div className="h-screen w-screen ">
-        <div className="h-[70vh] sm:max-w-[60vw] sm:m-auto mx-[5vw] sm:mt-[10vh]   rounded-lg flex shadow-[30px_30px_60px_rgba(0,0,0,0.35)]">
-          <div className=" flex-1 h-full">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-4xl mx-auto flex flex-col sm:flex-row rounded-lg shadow-[30px_30px_60px_rgba(0,0,0,0.15)] bg-white overflow-hidden">
+          <div className="flex-1 p-8 flex flex-col justify-center">
             <p className="text-center text-lg font-bold mt-2 w-4/5">
               {isLoginMethod ? "Sign In" : "Sign up"}
             </p>
@@ -147,13 +147,13 @@ function LoginComponent() {
               </div>
             </div>
           </div>
-          <div className="w-full sm:w-1/3 bg-blue-800 rounded-r-md sm:block hidden">
-  <img
-    className="w-full h-full object-cover"
-    src="https://zdblogs.zohowebstatic.com/sites/social/journal/files/2021-04/linkedin-journal-illustration.png"
-    alt="Illustration"
-  />
-</div> 
+          <div className="sm:w-1/3 bg-blue-800 hidden sm:block">
+            <img
+              className="w-full h-full object-cover"
+              src="https://zdblogs.zohowebstatic.com/sites/social/journal/files/2021-04/linkedin-journal-illustration.png"
+              alt="Illustration"
+            />
+          </div>
         </div>
       </div>
     </UserLayout>
