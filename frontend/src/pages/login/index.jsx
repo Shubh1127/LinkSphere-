@@ -1,5 +1,6 @@
 import UserLayout from "@/layout/UserLayout/UserPage";
 import { useRouter } from "next/router";
+import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
@@ -39,7 +40,7 @@ function LoginComponent() {
     dispatch(emptyMessage());
   },[isLoginMethod])
   useEffect(()=>{
-    if(localStorage.getItem("token")){
+    if(Cookies.get("token")){
       router.push('/dashboard')
     }
   })

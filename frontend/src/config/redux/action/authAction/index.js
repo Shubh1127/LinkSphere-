@@ -9,15 +9,7 @@ export const loginUser=createAsyncThunk(
                 email:user.email,
                 password:user.password,
             })
-            if (response.data.token) {
-                localStorage.setItem("token", response.data.token);
-            } else {
-                return thunkAPI.rejectWithValue({
-                    message:"token not provided"
-                });
-            }
-
-            return thunkAPI.fulfillWithValue(response.data.token)
+                        return thunkAPI.fulfillWithValue(response.data.token)
 
 
         }catch(err){
@@ -38,6 +30,18 @@ export const registerUser=createAsyncThunk(
             })
         }catch(err){
             return thunkAPI.rejectWithValue(err.response.data)
+        }
+    }
+)
+
+export const logoutUser=createAsyncThunk(
+    "user/logout",
+    async (_,thunkAPI)=>{
+        try{
+            await clientServer.post("/logout")
+            return thunkAPI.fulfillWithValue("User logged out successfully");
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
         }
     }
 )
