@@ -36,6 +36,10 @@ const userSchema=mongoose.Schema({
     token:{
         type:String,
         default:''
+    },
+    tokenExpiresAt:{
+        type:Date,
+        default:new Date(0) // Set to epoch time initially
     }
 
 })

@@ -98,13 +98,44 @@ export const login=async(req,res)=>{
             return res.status(400).json({message:"Invalid credentials"})
         }
         const token=crypto.randomBytes(32).toString("hex");
-        await User.updateOne({_id:user._id},{token})
+        const tokenExpiresAt=new Date(Date.now()+90*24*60*60*1000)//90 days
+        await User.updateOne({_id:user._id},{token,tokenExpiresAt})
+        res.cookie("token",token,{
+            httpOnly:true,
+            secure: false, // Set to true in production
+            sameSite:'lax',
+            maxAge:90*24*60*60*1000 //90 days
+        })
+        console.log(req.cookies)
         console.log("user: ",user.username)
-        return res.json({token:token})
+        return res.json({message:"Login successful",user:user})
     }catch(err){
         return res.status(500).json({message:err.message})
     }
 
+}
+
+export const logout=async(req,res)=>{
+    try{
+        console.log("request received")
+        console.log("req.cookies:",req.cookies)
+        const token=req.cookies.token;
+        console.log("token: ",token)
+        if(!token){
+            return res.status(400).json({message:"No token found"})
+        }
+        const user=await User.findOne({token:token})
+        if(!user){
+            return res.status(404).json({message:"User not found"})
+        }
+        user.token=null;
+        user.tokenExpiresAt=null;
+        await user.save();
+        res.clearCookie("token")
+        res.status(200).json({message:"Logout successful"})
+    }catch(err){
+        return res.status(500).json({message:err.message})
+    }
 }
 export const uploadProfilePicture=async(req,res)=>{
 

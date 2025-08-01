@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -8,7 +9,12 @@ import userRoutes from "./routes/user.routes.js"
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+  origin:"http://localhost:3000" || process.env.FRONTEND_URL,
+  credentials:true,
+  methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
+}));
 app.use(express.json());
 app.use(express.static('uploads'));
 app.use(postRoutes)
