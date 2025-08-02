@@ -42,9 +42,9 @@ export default function Home() {
                 <span className="text-blue-500 font-bold cursor-pointer hover:underline">
                    Privacy Policy
                 </span>
-                , and
-                <span className="text-blue-500 font-bold cursor-pointer hover:underline">
-                   Cookie Policy.
+                <p className="inline-block">, and </p> 
+                <span className="text-blue-500 inline-block font-bold cursor-pointer hover:underline">
+                    Cookie Policy.
                 </span>
               
               </p>
