@@ -1,52 +1,58 @@
 import UserLayout from "@/layout/UserLayout/UserPage";
 import { useRouter } from "next/router";
-import Cookies from "js-cookie";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import { loginUser,registerUser } from "@/config/redux/action/authAction";
+import { loginUser, registerUser } from "@/config/redux/action/authAction";
 import { emptyMessage } from "@/config/redux/reducer/authReducer";
+
+export async function getServerSideProps({ req }) {
+  const token = req.cookies?.token;
+  if (token) {
+    return {
+      redirect: {
+        destination: "/dashboard",
+        permanent: false,
+      },
+    };
+  }
+  return { props: {} };
+}
+
 function LoginComponent() {
   const authState = useSelector((state) => state.auth);
   const router = useRouter();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const [isLoginMethod, setIsLoginMethod] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const[email,setEmail]=useState("");
-  const[password,setPassword]=useState("");
-  const[name,setName]=useState("");
-  const[username,setUsername]=useState("");
-  const[message,setMessage]=useState("");
-   
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     if (authState.loggedIn) {
       router.push("/dashboard");
     }
-  },[authState.loggedIn]);
+  }, [authState.loggedIn]);
 
-
-  const handleRegister=()=>{
-    console.log("registering user",username,name,email,password)
-      dispatch(registerUser({username,name,email,password}))
-      if(authState.message?.message=='User already exists'){
-        console.log("User already exist")
-        setIsLoginMethod(true);
-        setMessage("User already exist. Please Login.")
-      }
-   
-  }
-  useEffect(()=>{
-    console.log(authState.message?.message)
-    dispatch(emptyMessage());
-  },[isLoginMethod])
-  useEffect(()=>{
-    if(Cookies.get("token")){
-      router.push('/dashboard')
+  const handleRegister = () => {
+    console.log("registering user", username, name, email, password);
+    dispatch(registerUser({ username, name, email, password }));
+    if (authState.message?.message == "User already exists") {
+      console.log("User already exist");
+      setIsLoginMethod(true);
+      setMessage("User already exist. Please Login.");
     }
-  })
-  const handleLogin=()=>{
-    dispatch(loginUser({email,password}))
-  }
+  };
+  useEffect(() => {
+    console.log(authState.message?.message);
+    dispatch(emptyMessage());
+  }, [isLoginMethod]);
+  const handleLogin = () => {
+    dispatch(loginUser({ identifier: username, password }));
+  };
   return (
     <UserLayout>
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
@@ -56,37 +62,52 @@ function LoginComponent() {
               {isLoginMethod ? "Sign In" : "Sign up"}
             </p>
             <div className="flex flex-col m-4 p-4 w-full h-full">
-              {!isLoginMethod && 
-              <div className="flex w-4/5 gap-2">
+              {/* Sign Up fields */}
+              {!isLoginMethod && (
+                <div className="flex w-4/5 gap-2">
+                  <input
+                    type="text"
+                    placeholder="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 mb-4 w-1/2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 w-1/2 mb-4"
+                  />
+                </div>
+              )}
+              {/* Only show email input for Sign Up */}
+              {!isLoginMethod && (
+                <input
+                  placeholder="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="border border-gray-300 rounded-md p-2 w-4/5 mb-4"
+                />
+              )}
+              {/* Only show Username or Email input for Sign In */}
+              {isLoginMethod && (
                 <input
                   type="text"
-                  placeholder="username"
+                  placeholder="Username or Email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="border border-gray-300 rounded-md p-2 mb-4 w-1/2"
-                  />
-                <input
-                  type="text"
-                  placeholder="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="border border-gray-300 rounded-md p-2 w-1/2 mb-4"
+                  className="border border-gray-300 rounded-md p-2 w-4/5 mb-4"
                 />
-              </div>
-                }
-              <input
-                placeholder="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="border border-gray-300 rounded-md p-2 w-4/5 mb-4"
-              />
-               <div className="relative w-4/5 mb-4">
+              )}
+              {/* Password input for both */}
+              <div className="relative w-4/5 mb-4">
                 <input
                   placeholder="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={((e)=>setPassword(e.target.value))}
+                  onChange={((e) => setPassword(e.target.value))}
                   className="border border-gray-300 rounded-md p-2 w-full"
                 />
                 <div
@@ -100,51 +121,53 @@ function LoginComponent() {
                   )}
                 </div>
               </div>
+              
               <div className="w-4/5">
-              {
-                isLoginMethod?
-                <p  className={`text-center ${authState.isError? "text-red-500":"text-green-500"}`}>{message ||authState?.message?.message  }</p>
-                :
-                <p  className={`text-center ${authState.isError? "text-red-500":"text-green-500"}`}>{authState?.message?.message }</p>
-              }
-              </div>
-              <div>
                 {
-                  isLoginMethod ? 
-                  <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={()=>setIsLoginMethod(!isLoginMethod)}>Don't have an account?</p> 
-                  : 
-                  <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={()=>setIsLoginMethod(!isLoginMethod)}>Already have an account?</p>
+                  isLoginMethod ?
+                    <p className={`text-center ${authState.isError ? "text-red-500" : "text-green-500"}`}>{message || authState?.message?.message}</p>
+                    :
+                    <p className={`text-center ${authState.isError ? "text-red-500" : "text-green-500"}`}>{authState?.message?.message}</p>
                 }
               </div>
               <div>
                 {
-                  isLoginMethod ? 
-                  <button
-                    className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
-                    onClick={() => {
-                      setMessage(""),
-                      setEmail(""), 
-                      setPassword(""),
-                      handleLogin();
-                    }}
-                  >
-                    Sign In
-                  </button> 
-                  : 
-                  <button
-                    className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
-                    onClick={() => {
-                      setName(""),
-                      setUsername(""),
-                      setEmail(""), 
-                      setPassword(""),
-                      handleRegister();
-                    }}
-                  >
-                    Sign Up
-                  </button>
+                  isLoginMethod ?
+                    <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={() => setIsLoginMethod(!isLoginMethod)}>Don't have an account?</p>
+                    :
+                    <p className="text-blue-500 text-right w-4/5 cursor-pointer" onClick={() => setIsLoginMethod(!isLoginMethod)}>Already have an account?</p>
                 }
-                
+              </div>
+              <div>
+                {
+                  isLoginMethod ?
+                    <button
+                      className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
+                      onClick={() => {
+                        setMessage(""),
+                          setEmail(""),
+                          setUsername(""),
+                          setPassword(""),
+                          handleLogin();
+                      }}
+                    >
+                      Sign In
+                    </button>
+                    :
+                    <button
+                      className="bg-blue-800 cursor-pointer border-none text-white py-2 px-4 rounded-md transition-all duration-300 mt-2 w-4/5"
+                      onClick={() => {
+                        setName(""),
+                          setUsername(""),
+                          setEmail(""),
+                          setPassword(""),
+                          handleRegister();
+                      }}
+                    >
+                      Sign Up
+                    </button>
+                }
+
               </div>
             </div>
           </div>

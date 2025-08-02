@@ -1,16 +1,16 @@
 import { clientServer } from "@/config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
+
 export const loginUser=createAsyncThunk(
     "user/login",
     async (user,thunkAPI)=>{
         try{
             const response=await clientServer.post("/login",{
-                email:user.email,
+                identifier:user.identifier,
                 password:user.password,
             })
-                        return thunkAPI.fulfillWithValue(response.data.token)
-
+                        return thunkAPI.fulfillWithValue(response.data.message);
 
         }catch(err){
             return thunkAPI.rejectWithValue(err.response.data)
@@ -39,6 +39,7 @@ export const logoutUser=createAsyncThunk(
     async (_,thunkAPI)=>{
         try{
             await clientServer.post("/logout")
+            
             return thunkAPI.fulfillWithValue("User logged out successfully");
         }catch(err){
             return thunkAPI.rejectWithValue(err.response.data);

@@ -83,13 +83,17 @@ export const register=async(req,res)=>{
 
 export const login=async(req,res)=>{
     try{
-        let {email,password}=req.body;
-        if(!email || !password){
+        // console.log(req.body)
+        let {identifier,password}=req.body;
+        if(!identifier || !password){
             return res.status(400).json({message:"All fields are required"})
         }
-        const user=await User.findOne({
-            email
-        })
+        let user;
+        if(identifier.includes("@")){
+            user=await User.findOne({email:identifier});
+        }else{
+            user=await User.findOne({username:identifier})
+        }
         if(!user){
             return res.status(404).json({message:"user not found"})
         }
@@ -117,10 +121,10 @@ export const login=async(req,res)=>{
 
 export const logout=async(req,res)=>{
     try{
-        console.log("request received")
-        console.log("req.cookies:",req.cookies)
+        // console.log("request received")
+        // console.log("req.cookies:",req.cookies)
         const token=req.cookies.token;
-        console.log("token: ",token)
+        // console.log("token: ",token)
         if(!token){
             return res.status(400).json({message:"No token found"})
         }
