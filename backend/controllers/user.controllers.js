@@ -186,7 +186,10 @@ export const updateUserProfile=async(req,res)=>{
 
 }
 export const getUserAndProfile =async(req,res)=>{
-    const {token}=req.body;
+    const token=req.cookies.token;
+    if(!token){
+        return res.status(400).json({message:"No token found"})
+    }
     try{
         const user=await User.findOne({token:token});
         if(!user){

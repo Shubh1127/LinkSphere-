@@ -34,6 +34,19 @@ export const registerUser=createAsyncThunk(
     }
 )
 
+export const getAboutUser=createAsyncThunk(
+    "user/getAboutUser",
+    async (_,thunkAPI)=>{
+        try{
+            const response=await clientServer.get(`/get_user_and_profile`)
+            console.log("User data fetched successfully:", response.data);
+            return thunkAPI.fulfillWithValue(response.data)
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data)
+        }
+    }
+)
+
 export const logoutUser=createAsyncThunk(
     "user/logout",
     async (_,thunkAPI)=>{

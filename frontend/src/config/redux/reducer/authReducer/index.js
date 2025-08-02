@@ -1,5 +1,5 @@
 const { createSlice } = require("@reduxjs/toolkit")
-import { loginUser, registerUser } from "../../action/authAction/index"
+import { getAboutUser, loginUser, registerUser } from "../../action/authAction/index"
 
 const initialState ={
     user:[],
@@ -65,6 +65,23 @@ const authSlice=createSlice({
             state.isError=true
             state.isSuccess=false
             state.message=action.payload
+        })
+        .addCase(getAboutUser.pending,(state)=>{
+            state.isLoading=true
+            state.message="Fetching user data"
+        })
+        .addCase(getAboutUser.fulfilled,(state,action)=>{
+            state.isLoading=false
+            state.isError=false
+            state.isSuccess=true
+            state.user=action.payload.profile
+            state.message="User data fetched successfully"
+        })
+        .addCase(getAboutUser.rejected,(state,action)=>{
+            state.isLoading=false
+            state.isError=true
+            state.isSuccess=false
+            state.message=action.payload.message || "Failed to fetch user data"
         })
     }
 })

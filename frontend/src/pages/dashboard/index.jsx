@@ -1,29 +1,38 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { logoutUser } from '@/config/redux/action/authAction'
+import { getAboutUser, logoutUser } from '@/config/redux/action/authAction'
 import { useRouter } from 'next/router';
+import { getAllPosts } from '@/config/redux/action/postAction';
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token;
   if (!token) {
     return {
       redirect: {
-        destination: '/login',
+        destination: '/',
         permanent: false,
       },
     };
   }
-  return { props: {} };
+  return { props: {token} };
 }
 
 
 
-const Dashboard = () => {
+const Dashboard = ({token}) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const handleLogout = () => {
     dispatch(logoutUser());
     router.push("/");
   };
+
+  useEffect(()=>{
+    if(token){
+      console.log("Token received in dashboard:", token);
+      dispatch(getAllPosts())
+      dispatch(getAboutUser())
+    }
+  },[token,dispatch])
   return (
     <div className="transition-opacity duration-500 opacity-100">
       <div className='flex items-baseline justify-between m-4'>
