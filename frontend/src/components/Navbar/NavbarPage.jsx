@@ -1,17 +1,34 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "@/config/redux/action/authAction";
 
 const NavbarComponent = ({ token }) => {
-  const authState=useSelector((state)=>state.auth);
-  const dispatch=useDispatch();
-  const handleLogout=()=>{
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef=useRef(null);
+  const authState = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const handleLogout = () => {
     dispatch(logoutUser());
     router.push("/");
-  }
+  };
   console.log("Token in NavbarPage:", token);
   const router = useRouter();
+  useEffect(()=>{
+    const handleClickOutside=(event)=>{
+      if(
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ){
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown",handleClickOutside);
+    return ()=>{
+      document.removeEventListener("mousedown",handleClickOutside);
+    }
+  },[]);
+  
   return (
     <div className="flex items-baseline justify-between m-4">
       <div
@@ -27,12 +44,39 @@ const NavbarComponent = ({ token }) => {
         {token ? (
           <div className="flex items-center gap-2">
             <p>Hey {authState.user?.userId?.name}</p>
-           <div className="rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center">
-            <img src={authState.user?.userId?.profilePicture} alt="Profile" className="w-8 h-8 rounded-full" />
-            {/* {authState.user?.userId?.profilePicture} */}
-           </div>
-          
-           {/* <button
+            <div className="relative rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center" ref={dropdownRef}>
+              <img
+                onClick={() => setIsOpen(!isOpen)}
+                src={authState.user?.userId?.profilePicture}
+                alt="Profile"
+                className="w-8 h-8 rounded-full cursor-pointer"
+              />
+              {isOpen && (
+                <div className="absolute top-10 right-0 w-max p-1 bg-white border rounded-md shadow-lg">
+                  <div className="flex gap-1 scale-100 hover:scale-110 hover:p-[0.1rem] transition-transform ease-in-out cursor-pointer">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                      />
+                    </svg>
+
+                    <button onClick={handleLogout} className="text-red-500 cursor-pointer ">Logout</button>
+                  </div>
+                </div>
+              )}
+              {/* {authState.user?.userId?.profilePicture} */}
+            </div>
+
+            {/* <button
             className="me-2 border rounded-xl p-1 px-2 hover:bg-gray-100 cursor-pointer"
             onClick={() => {
               handleLogout();
