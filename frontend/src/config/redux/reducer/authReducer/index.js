@@ -74,7 +74,7 @@ const authSlice=createSlice({
             state.isLoading=false
             state.isError=false
             state.isSuccess=true
-            state.user=action.payload.profile
+            state.user=action.payload
             state.message="User data fetched successfully"
         })
         .addCase(getAboutUser.rejected,(state,action)=>{
