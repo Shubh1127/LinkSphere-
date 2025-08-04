@@ -45,12 +45,19 @@ const NavbarComponent = ({ token }) => {
           <div className="flex items-center gap-2">
             <p>Hey {authState.user?.userId?.name}</p>
             <div className="relative rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center" ref={dropdownRef}>
-              <img
-                onClick={() => setIsOpen(!isOpen)}
-                src={authState.user?.userId?.profilePicture}
-                alt="Profile"
-                className="w-8 h-8 rounded-full cursor-pointer"
-              />
+               {
+                    !authState.userId?.profilePicture? <img 
+                    onClick={() => setIsOpen(!isOpen)}
+                    src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                    alt="Default Profile"
+                    className="w-8 h-8 rounded-full"
+                />:
+                  <img
+                    onClick={() => setIsOpen(!isOpen)}
+                    src={authState.userId?.profilePicture}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full"
+                  />}
               {isOpen && (
                 <div className="absolute top-10 right-0 w-max p-1 bg-white border rounded-md shadow-lg">
                   <div className="flex gap-1 scale-100 hover:scale-110 hover:p-[0.1rem] transition-transform ease-in-out cursor-pointer">

@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAboutUser, logoutUser } from "@/config/redux/action/authAction";
+import { getAboutUser, getAllUsers, logoutUser } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
 import { getAllPosts } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
+import { BASE_URL } from "@/config";
 // import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token;
@@ -25,62 +26,57 @@ const Dashboard = ({ token }) => {
   console.log("Auth State:", authState);
   const dispatch = useDispatch();
   const router = useRouter();
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    router.push("/");
-  };
-
+  // const handleLogout = () => {
+  //   dispatch(logoutUser());
+  //   router.push("/");
+  // };
+  // console.log("authState user---?",authState.user.profile?.userId?.profilePicture)
   useEffect(()=>{
     if(token){
-      setisTokenThere(true);
+      setTokenIsThere(true);
     }
   },[token])
 
   useEffect(() => {
-    if (isTokenThere) {
+    if (authState.isTokenThere) {
       console.log("Token received in dashboard:", token);
       dispatch(getAllPosts());
       dispatch(getAboutUser());
     }
+    if(!authState.all_profiles_fetched) {
+      dispatch(getAllUsers());
+    }
   }, [authState.isTokenThere, dispatch]);
-  return (
-    // <UserLayout className="transition-opacity duration-500 opacity-100" token={token}>
-    //   <div className="flex items-baseline justify-between m-4">
-    //     <p>Dashboard</p>
-    //     {/* <button
-    //       className="me-2 border rounded-xl p-1 px-2 hover:bg-gray-100 cursor-pointer"
-    //       onClick={handleLogout}
-    //     >
-    //       Logout
-    //     </button> */}
-    //   </div>
-    //   <div>
-    //     {authState.user && (
-    //       <div className="flex items-center gap-4">
-    //         {/* <img
-    //           src={authState.user.userId.profilePicture}
-    //           alt="Profile"
-    //           className="w-16 h-16 rounded-full"
-    //         /> */}
-    //         <div>
-    //           <p className="text-lg font-bold">{authState?.user?.userId?.name}</p>
-    //           <p className="text-sm text-gray-500">
-    //             {/* {authState.user.userId.email} */}
-    //           </p>
-    //         </div>
-    //       </div>
-    //     )}{" "}
-    //     {/* Display user information */}
-    //   </div>
-    // </UserLayout>
+
+  
+  if(authState.user.length!==0){
+    return(
     <UserLayout token={token}>
-     <DashboardLayout>
-      <div>
-        <h1>Dashboard</h1>
+     <DashboardLayout token={token}>
+      <div className="scrollComponent">
+        <div className="createPostContainer">
+         
+              <img width={100} src={`${BASE_URL}/${authState.user?.userId?.profilePicture}`} alt="Profile" />
+
+        </div>
+      </div>
+     </DashboardLayout>
+    </UserLayout>)
+    }
+    else{
+    return(
+    <UserLayout token={token}>
+     <DashboardLayout token={token}>
+      <div className="scrollComponent">
+        <div className="createPostContainer">
+         <h1>Loading...</h1>
+        </div>
       </div>
      </DashboardLayout>
     </UserLayout>
-  );
-};
+    )
+    }
+  
+}
 
 export default Dashboard;

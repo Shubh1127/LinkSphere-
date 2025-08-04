@@ -119,7 +119,7 @@ export const login=async(req,res)=>{
 
 }
 
-export const logout=async(req,res)=>{
+export const logoutUser=async(req,res)=>{
     try{
         // console.log("request received")
         // console.log("req.cookies:",req.cookies)
@@ -202,7 +202,7 @@ export const getUserAndProfile =async(req,res)=>{
 
 
     }catch(err){
-        return res.josn({message:err.message})
+        return res.json({message:err.message})
     }
 }
 

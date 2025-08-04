@@ -40,6 +40,7 @@ function LoginComponent() {
   const handleRegister = () => {
     console.log("registering user", username, name, email, password);
     dispatch(registerUser({ username, name, email, password }));
+   
     if (authState.message?.message == "User already exists") {
       console.log("User already exist");
       setIsLoginMethod(true);
@@ -53,13 +54,26 @@ function LoginComponent() {
   const handleLogin = () => {
     dispatch(loginUser({ identifier: username, password }));
   };
+  useEffect(() => {
+    if (authState.message === "Registration successful") {
+      setIsLoginMethod(true);
+      setMessage("Registration successful. Please Login.");
+    }
+    if (authState.message?.message === "User already exists") {
+      setIsLoginMethod(true);
+      setMessage("User already exist. Please Login.");
+    }
+  }, [authState.message]);
   return (
     <UserLayout>
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-4xl mx-auto flex flex-col sm:flex-row rounded-lg shadow-[30px_30px_60px_rgba(0,0,0,0.15)] bg-white overflow-hidden">
           <div className="flex-1 p-8 flex flex-col justify-center">
-            <p className="text-center text-lg font-bold mt-2 w-4/5">
+            <p className="text-center text-lg font-bold mt-2 w-4/5 flex flex-col">
               {isLoginMethod ? "Sign In" : "Sign up"}
+              {authState.message==="Registration successful" && (
+                <span className="text-green-500">{message}</span>
+              )}
             </p>
             <div className="flex flex-col m-4 p-4 w-full h-full">
               {/* Sign Up fields */}

@@ -1,5 +1,5 @@
 const { createSlice } = require("@reduxjs/toolkit")
-import { getAboutUser, loginUser, registerUser } from "../../action/authAction/index"
+import { getAboutUser, getAllUsers, loginUser, logoutUser, registerUser } from "../../action/authAction/index"
 
 const initialState ={
     user:[],
@@ -11,6 +11,7 @@ const initialState ={
     isTokenThere:false,
     connections:[],
     connectionRequest:[],      
+    all_profiles_fetched:false,
 }
 
 const authSlice=createSlice({
@@ -63,7 +64,7 @@ const authSlice=createSlice({
             state.isLoading==false,
             state.isError=false
             state.isSuccess=true,
-            state.loggedIn=true
+            state.loggedIn=false
             state.message="Registration successful"
             state.user=action.payload
         })
@@ -89,6 +90,44 @@ const authSlice=createSlice({
             state.isError=true
             state.isSuccess=false
             state.message=action.payload.message || "Failed to fetch user data"
+        })
+        .addCase(logoutUser.pending,(state)=>{
+            state.isLoading=true
+            state.message="Logging out"
+        })
+        .addCase(logoutUser.fulfilled,(state)=>{
+            state.isLoading=false
+            state.isError=false
+            state.isSuccess=true
+            state.loggedIn=false
+            state.user=[]
+            state.message="Logout successful"
+        })
+        .addCase(logoutUser.rejected,(state,action)=>{
+            state.isLoading=false
+            state.isError=true
+            state.isSuccess=false
+            state.message=action.payload.message || "Failed to logout"
+        })
+        .addCase(getAllUsers.pending,(state)=>{
+            state.isLoading=true
+            state.message="Fetching all users"
+        })
+        .addCase(getAllUsers.fulfilled,(state,action)=>{
+            state.isLoading=false
+            state.isError=false
+            state.isSuccess=true
+            state.all_users=action.payload.profiles
+            state.all_profiles_fetched=true
+            state.message="All users fetched successfully"
+        })
+        .addCase(getAllUsers.rejected,(state,action)=>{
+            state.isLoading=false
+            state.isError=true
+            state.isSuccess=false
+            state.all_profiles_fetched=false
+            state.all_users=[]
+            state.message=action.payload.message || "Failed to fetch all users"
         })
     }
 })
