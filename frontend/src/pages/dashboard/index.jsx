@@ -1,6 +1,10 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAboutUser, getAllUsers, logoutUser } from "@/config/redux/action/authAction";
+import {
+  getAboutUser,
+  getAllUsers,
+  logoutUser,
+} from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
 import { getAllPosts } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
@@ -31,11 +35,11 @@ const Dashboard = ({ token }) => {
   //   router.push("/");
   // };
   // console.log("authState user---?",authState.user.profile?.userId?.profilePicture)
-  useEffect(()=>{
-    if(token){
+  useEffect(() => {
+    if (token) {
       setTokenIsThere(true);
     }
-  },[token])
+  }, [token]);
 
   useEffect(() => {
     if (authState.isTokenThere) {
@@ -43,40 +47,47 @@ const Dashboard = ({ token }) => {
       dispatch(getAllPosts());
       dispatch(getAboutUser());
     }
-    if(!authState.all_profiles_fetched) {
+    if (!authState.all_profiles_fetched) {
       dispatch(getAllUsers());
     }
   }, [authState.isTokenThere, dispatch]);
 
-  
-  if(authState.user.length!==0){
-    return(
-    <UserLayout token={token}>
-     <DashboardLayout token={token}>
-      <div className="scrollComponent">
-        <div className="createPostContainer">
-         
-              <img width={100} src={`${BASE_URL}/${authState.user?.userId?.profilePicture}`} alt="Profile" />
+  if (authState.user.length !== 0) {
+    return (
+      <UserLayout token={token}>
+        <DashboardLayout token={token}>
+          <div className="scrollComponent">
+            <div className="createPostContainer">
+              <img
+                width={100}
+                src={`${BASE_URL}/${authState.user?.userId?.profilePicture}`}
+                alt="Profile"
+              />
+              <textarea name="" id=""></textarea>
+              <div className="Fab">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+</svg>
 
-        </div>
-      </div>
-     </DashboardLayout>
-    </UserLayout>)
-    }
-    else{
-    return(
-    <UserLayout token={token}>
-     <DashboardLayout token={token}>
-      <div className="scrollComponent">
-        <div className="createPostContainer">
-         <h1>Loading...</h1>
-        </div>
-      </div>
-     </DashboardLayout>
-    </UserLayout>
-    )
-    }
-  
-}
+              </div>
+            </div>
+          </div>
+        </DashboardLayout>
+      </UserLayout>
+    );
+  } else {
+    return (
+      <UserLayout token={token}>
+        <DashboardLayout token={token}>
+          <div className="scrollComponent">
+            <div className="createPostContainer">
+              <h1>Loading...</h1>
+            </div>
+          </div>
+        </DashboardLayout>
+      </UserLayout>
+    );
+  }
+};
 
 export default Dashboard;
