@@ -57,18 +57,38 @@ const Dashboard = ({ token }) => {
       <UserLayout token={token}>
         <DashboardLayout token={token}>
           <div className="scrollComponent">
-            <div className="createPostContainer">
+            <div className="createPostContainer flex bg-pink-50 rounded-xl  p-4 gap-4  ">
               <img
-                width={100}
+                width={60}
+                className="rounded-full"
                 src={`${BASE_URL}/${authState.user?.userId?.profilePicture}`}
                 alt="Profile"
               />
-              <textarea name="" id=""></textarea>
-              <div className="Fab">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-</svg>
+              <textarea
+                className=" flex-1 outline rounded-lg h-[8vh] w-[15vw]  pt-3 ps-1"
+                name=""
+                id=""
+                placeholder="  what's on your mind?"
+              ></textarea>
+              <div className="   items-center py-2 h-[7vh] w-[5vw]   ">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-11 ms-2 border rounded-full cursor-pointer mb-1 bg-blue-800 text-white hover:bg-blue-700 "
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
 
+                {/* <button className="bg-blue-500 text-white rounded-lg px-2 py-1">
+                  Post
+                </button> */}
               </div>
             </div>
           </div>

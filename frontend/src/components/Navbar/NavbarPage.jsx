@@ -50,13 +50,13 @@ const NavbarComponent = ({ token }) => {
                     onClick={() => setIsOpen(!isOpen)}
                     src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
                     alt="Default Profile"
-                    className="w-8 h-8 rounded-full"
+                    className="w-8 h-8 rounded-full cursor-pointer"
                 />:
                   <img
                     onClick={() => setIsOpen(!isOpen)}
                     src={authState.userId?.profilePicture}
                     alt="Profile"
-                    className="w-8 h-8 rounded-full"
+                    className="w-8 h-8 rounded-full cursor-pointer"
                   />}
               {isOpen && (
                 <div className="absolute top-10 right-0 w-max p-1 bg-white border rounded-md shadow-lg">
