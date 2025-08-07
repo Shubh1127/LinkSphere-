@@ -42,8 +42,9 @@ const Dashboard = ({ token }) => {
   }, [token]);
 
     const [postContent,setPostContent]=useState("");
+    const [fileContent,setFileContent]=useState();
 
-    const handlePostSubmit=()=>{
+    const handlePostSubmit=async ()=>{
       console.log("Post content:", postContent);
       setPostContent("");
     }
@@ -79,11 +80,12 @@ const Dashboard = ({ token }) => {
                   id=""
                   placeholder="  what's on your mind?"
                 ></textarea>
+                  <label htmlFor="fileUpload" className="cursor-pointer">
                 <div className="  items-center py-2 h-[7vh] w-[5vw]   ">
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className="size-11 ms-2 border rounded-full cursor-pointer mb-1 bg-blue-800 text-white hover:bg-blue-700 "
@@ -94,7 +96,11 @@ const Dashboard = ({ token }) => {
                       d="M12 4.5v15m7.5-7.5h-15"
                     />
                   </svg>
+                    <input type="file" accept="image/*" onChange={(e) => setFileContent(e.target.files[0])} className="hidden" id="fileUpload" />
                 </div>
+                </label>
+                   
+                  
               </div>
               <button className="bg-blue-500 text-white mt-2 cursor-pointer rounded-full w-12 h-12 flex items-center justify-center hover:bg-blue-600 transition-colors duration-200 ease-in-out">
                 <svg

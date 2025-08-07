@@ -5,7 +5,7 @@ export const activecheck=async(req,res)=>{
 }
 
 export const createPost=async(req,res)=>{
-    const {token}=req.body;
+    const token=req.cookies.token;
     try{
         const user=await User.findOne({token:token});
         if(!user){
