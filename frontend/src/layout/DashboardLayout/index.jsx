@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 export default function DashboardLayout({ children, token }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
-//   console.log("authState data in dashboardlayout",authState)
+  //   console.log("authState data in dashboardlayout",authState)
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -87,23 +87,25 @@ export default function DashboardLayout({ children, token }) {
           authState.all_users.map((profile) => {
             return (
               <div>
-                <div className="flex items-center gap-2">
-                {
-                    profile.userId?.profilePicture? <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                    alt="Default Profile"
-                    className="w-8 h-8 rounded-full"
-                />:
-                  <img
-                    src={profile.userId?.profilePicture}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full"
-                  />}
+                <div className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out">
+                  {profile.userId?.profilePicture ? (
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                      alt="Default Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <img
+                      src={profile.userId?.profilePicture}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                  )}
                   <p>{profile.userId.name}</p>
+                  <p className="text-sm text-gray-500">
+                    @{profile.userId?.username}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500">
-                  @{profile.userId?.username}
-                </p>
               </div>
             );
           })}

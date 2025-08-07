@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAboutUser,
@@ -41,6 +41,12 @@ const Dashboard = ({ token }) => {
     }
   }, [token]);
 
+    const [postContent,setPostContent]=useState("");
+
+    const handlePostSubmit=()=>{
+      console.log("Post content:", postContent);
+      setPostContent("");
+    }
   useEffect(() => {
     if (authState.isTokenThere) {
       console.log("Token received in dashboard:", token);
@@ -64,32 +70,49 @@ const Dashboard = ({ token }) => {
                 src={`${BASE_URL}/${authState.user?.userId?.profilePicture}`}
                 alt="Profile"
               />
-              <textarea
-                className=" flex-1 outline rounded-lg h-[8vh] w-[15vw]  pt-3 ps-1"
-                name=""
-                id=""
-                placeholder="  what's on your mind?"
-              ></textarea>
-              <div className="   items-center py-2 h-[7vh] w-[5vw]   ">
+              <div className="outline w-[80%] rounded-lg h-max flex">
+                <textarea
+                  onChange={(e)=>setPostContent(e.target.value)}
+                  value={postContent}
+                  className=" flex-1  rounded-lg h-[8vh] w-[15vw]  pt-3 ps-1 focus:outline-none resize-none"
+                  name=""
+                  id=""
+                  placeholder="  what's on your mind?"
+                ></textarea>
+                <div className="  items-center py-2 h-[7vh] w-[5vw]   ">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-11 ms-2 border rounded-full cursor-pointer mb-1 bg-blue-800 text-white hover:bg-blue-700 "
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <button className="bg-blue-500 text-white mt-2 cursor-pointer rounded-full w-12 h-12 flex items-center justify-center hover:bg-blue-600 transition-colors duration-200 ease-in-out">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-11 ms-2 border rounded-full cursor-pointer mb-1 bg-blue-800 text-white hover:bg-blue-700 "
+                  className="size-6"
+                  onClick={handlePostSubmit}
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
+                    d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15m0-3-3-3m0 0-3 3m3-3V15"
                   />
                 </svg>
-
-                {/* <button className="bg-blue-500 text-white rounded-lg px-2 py-1">
-                  Post
-                </button> */}
-              </div>
+              </button>
             </div>
           </div>
         </DashboardLayout>
