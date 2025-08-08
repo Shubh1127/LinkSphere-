@@ -6,7 +6,7 @@ import {
   logoutUser,
 } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
-import { getAllPosts } from "@/config/redux/action/postAction";
+import { createPost, getAllPosts } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { BASE_URL } from "@/config";
@@ -46,6 +46,7 @@ const Dashboard = ({ token }) => {
 
     const handlePostSubmit=async ()=>{
       console.log("Post content:", postContent);
+      await dispatch(createPost({file:fileContent,body:body}))
       setPostContent("");
     }
   useEffect(() => {
