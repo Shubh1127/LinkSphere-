@@ -81,7 +81,7 @@ export default function DashboardLayout({ children, token }) {
         </div>
       </div>
       <div className="feedContainer  flex-1">{children}</div>
-      <div className="extraContainer flex flex-col   flex-[0.5] ms-11 justify-between">
+      <div className="extraContainer flex flex-col   flex-[0.5] ms-12 justify-between">
         <h1 className="font-semibold mb-2 ms-2">Top Profiles</h1>
         {authState.all_profiles_fetched &&
           authState.all_users.map((profile) => {
