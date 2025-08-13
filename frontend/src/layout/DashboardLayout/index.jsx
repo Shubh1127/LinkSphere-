@@ -17,7 +17,7 @@ export default function DashboardLayout({ children, token }) {
   return (
     <div className=" flex  w-full mt-5 gap-2">
       <div className="homeContainer ">
-        <div className="homeContainer_leftBar flex items-start ps-6 py-2  flex-col gap-4 w-[15vw] ">
+        <div className="homeContainer_leftBar flex items-start ps-6 py-2  flex-col gap-4 w-[15vw] sticky top-0 h-max ">
           <div
             onClick={() => router.push("/dashboard")}
             className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out"
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children, token }) {
         </div>
       </div>
       <div className="feedContainer  flex-1">{children}</div>
-      <div className="extraContainer flex flex-col   flex-[0.5] ms-13 justify-between">
+      <div className="h-max flex flex-col   flex-[0.5] ms-13 justify-between">
         <h1 className="font-semibold mb-2 ms-2">Top Profiles</h1>
         {authState.all_profiles_fetched &&
           authState.all_users.map((profile) => {

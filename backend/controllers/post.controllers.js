@@ -28,7 +28,7 @@ export const createPost=async(req,res)=>{
 export const getAllPost=async(req,res)=>{
     try{
         // const {token}=req.body;
-        const posts=await Post.find().populate("userId","username email profilePicture");
+        const posts=await Post.find().populate("userId","username name email profilePicture");
         return res.status(200).json({posts:posts})
 
     }catch(err){
