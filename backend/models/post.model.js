@@ -15,6 +15,12 @@ const postSchema=mongoose.Schema({
         default:0
 
     },
+    likedBy:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }
+    ],
     createdAt:{
         type:Date,
         default:Date.now
@@ -32,6 +38,11 @@ const postSchema=mongoose.Schema({
     active:{
         type:Boolean,
         default:true
+
+    },
+    comments:{
+        type:Array,
+        default:[]
 
     },
     fileType:{
