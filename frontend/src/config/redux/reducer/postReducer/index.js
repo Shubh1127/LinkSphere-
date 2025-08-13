@@ -59,13 +59,14 @@ const postSlice=createSlice({
             state.isLoading=true
             state.message="Liking post..."
         })
-        .addCase(increment_Likes.fulfilled,(state,action)=>{
-            state.isLoading=false
-            state.isError=false
-            state.message=action.payload
+        .addCase(increment_Likes.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isError = false;
+            state.message = action.payload.message;
             const postIndex = state.posts.findIndex(post => post._id === action.meta.arg);
             if (postIndex !== -1) {
-                state.posts[postIndex].likes += 1; // Increment likes count
+                state.posts[postIndex].likes = action.payload.likes; // Update likes count
+                state.posts[postIndex].likedBy = action.payload.likedBy; // Update likedBy array
             }
         })
         .addCase(increment_Likes.rejected,(state,action)=>{

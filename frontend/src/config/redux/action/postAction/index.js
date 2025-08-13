@@ -67,7 +67,7 @@ export const increment_Likes=createAsyncThunk(
                 post_id:postId
             });
             if(response.status===200){
-                return thunkAPI.fulfillWithValue("Post liked successfully");
+                return thunkAPI.fulfillWithValue({ postId, likes: response.data.likes, likedBy: response.data.likedBy });
             }else{
                 return thunkAPI.rejectWithValue("Failed to like post");
             }
