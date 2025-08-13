@@ -1,4 +1,4 @@
-import { CommentPost, deletePost, getAllPosts, increment_Likes ,getAllComments} from "../../action/postAction"
+import { CommentPost, deletePost, getAllPosts, increment_Likes ,getAllComments,getCommentsByPostId} from "../../action/postAction"
 
 const { createSlice } = require("@reduxjs/toolkit")
 
@@ -78,13 +78,13 @@ const postSlice=createSlice({
             state.isLoading=true
             state.message="Commenting on post..."
         })
-        .addCase(CommentPost.fulfilled,(state,action)=>{
-            state.isLoading=false
-            state.isError=false
-            state.message=action.payload
-            const postIndex = state.posts.findIndex(post => post._id === action.meta.arg.postId);
+        .addCase(CommentPost.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isError = false;
+            state.message = "Comment added successfully";
+            const postIndex = state.posts.findIndex(post => post._id === action.payload.postId);
             if (postIndex !== -1) {
-                state.posts[postIndex].comments.push(action.meta.arg.comment); // Add comment to the post
+                state.posts[postIndex].comments.push(action.payload.comment);
             }
         })
         .addCase(CommentPost.rejected,(state,action)=>{
@@ -102,6 +102,20 @@ const postSlice=createSlice({
             state.comments=action.payload.comments; // Assuming action.payload contains the comments array
         })
         .addCase(getAllComments.rejected,(state,action)=>{
+            state.isLoading=false
+            state.isError=true
+            state.message=action.payload.message || "Failed to fetch comments"
+        })
+        .addCase(getCommentsByPostId.pending,(state)=>{
+            state.isLoading=true
+            state.message="Fetching comments for post..."
+        })
+        .addCase(getCommentsByPostId.fulfilled,(state,action)=>{
+            state.isLoading=false
+            state.isError=false
+            state.comments=action.payload.comments; // Assuming action.payload contains the comments array
+        })
+        .addCase(getCommentsByPostId.rejected,(state,action)=>{
             state.isLoading=false
             state.isError=true
             state.message=action.payload.message || "Failed to fetch comments"

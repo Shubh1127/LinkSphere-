@@ -8,10 +8,14 @@ import {
   deletePost,
   getAllPosts,
   increment_Likes,
+  CommentPost,
+  getCommentsByPostId,
+  getAllComments,
 } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { BASE_URL } from "@/config";
+import { comment } from "postcss";
 // import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token;
@@ -44,12 +48,15 @@ const Dashboard = ({ token }) => {
     }
   }, [token]);
 
+  console.log("postState.....", postState);
+
   const [postContent, setPostContent] = useState("");
   const [fileContent, setFileContent] = useState();
   const [previewUrl, setPreviewUrl] = useState(null);
   const [deletePostId, setDeletePostId] = useState(null);
   const [likedPosts, setLikedPosts] = useState([]);
   const [commentBoxId, setCommentBoxId] = useState(null);
+  const [commentInput, setCommentInput] = useState("");
 
   const handlePostSubmit = async () => {
     console.log("Post content:", postContent);
@@ -85,6 +92,7 @@ const Dashboard = ({ token }) => {
       console.log("Token received in dashboard:", token);
       dispatch(getAllPosts());
       dispatch(getAboutUser());
+      // dispatch(getAllComments({ postId: post._id }));
     }
     if (!authState.all_profiles_fetched) {
       dispatch(getAllUsers());
@@ -301,7 +309,8 @@ const Dashboard = ({ token }) => {
                       <hr />
                       <div className="flex justify-evenly">
                         <div className="flex items-center gap-1 cursor-pointer">
-                          {post.likedBy && post.likedBy.includes(authState.user.userId) ? (
+                          {post.likedBy &&
+                          post.likedBy.includes(authState.user.userId) ? (
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
@@ -336,23 +345,21 @@ const Dashboard = ({ token }) => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 cursor-pointer">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
-                          />
-                        </svg>
-                        <div>
-                          {post.comments.length}
-                        </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+                            />
+                          </svg>
+                          <div>{post.comments.length}</div>
                         </div>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -382,6 +389,67 @@ const Dashboard = ({ token }) => {
                             d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
                           />
                         </svg>
+                      </div>
+                      {commentBoxId === post._id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Add a comment..."
+                            className="flex-1 border rounded-lg px-2 py-1"
+                            onChange={(e) => setCommentBoxId(e.target.value)}
+                          />
+                          <button
+                            className="bg-blue-500 text-white px-3 py-1 rounded-lg"
+                            onClick={() => {
+                              dispatch(
+                                CommentPost({
+                                  postId: post._id,
+                                  comment: commentInput,
+                                })
+                              );
+                              setCommentInput("");
+                              setCommentBoxId(null);
+                            }}
+                          >
+                            Post
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Add a comment..."
+                            className="flex-1 border rounded-lg px-2 py-1"
+                            value={commentInput}
+                            onChange={(e) => setCommentInput(e.target.value)}
+                          />
+                          <button
+                            className="bg-blue-500 text-white px-3 py-1 rounded-lg"
+                            onClick={() => {
+                              dispatch(
+                                CommentPost({
+                                  postId: post._id,
+                                  comment: commentInput,
+                                })
+                              );
+                              setCommentInput("");
+                              setCommentBoxId(null);
+                            }}
+                          >
+                            Post
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold">Comments</h2>
+                      <div className="mt-2">
+                        {post.comments.map((comment) => (
+                          <div key={comment._id} className="border-b py-2">
+                            <p className="font-semibold">{comment.userId}</p>
+                            <p>{comment.body}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>

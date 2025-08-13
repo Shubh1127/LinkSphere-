@@ -76,18 +76,39 @@ export const increment_Likes=createAsyncThunk(
         }
     }
 )
-export const CommentPost=createAsyncThunk(
-    "post/CommentPost",
-    async(postId,comment,thunkAPI)=>{
+export const CommentPost = createAsyncThunk(
+  "post/CommentPost",
+  async ({ postId, comment }, thunkAPI) => {
+    try {
+      const response = await clientServer.post("/comment", {
+        post_id: postId,
+        comment: comment
+      });
+      if (response.status === 200) {
+        return thunkAPI.fulfillWithValue({
+          postId,
+          comment: response.data.comment // assuming backend returns the new comment
+        });
+      } else {
+        return thunkAPI.rejectWithValue("Failed to add comment");
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+)
+
+export const getAllComments=createAsyncThunk(
+    "post/getAllComments",
+    async(postId,thunkAPI)=>{
         try{
-            const response=await clientServer.post("/comment",{
-                post_id:postId,
-                comment:comment
+            const response=await clientServer.get("/comments",{
+                params: { post_id: postId }
             });
             if(response.status===200){
-                return thunkAPI.fulfillWithValue("Comment added successfully");
+                return thunkAPI.fulfillWithValue(response.data);
             }else{
-                return thunkAPI.rejectWithValue("Failed to add comment");
+                return thunkAPI.rejectWithValue("Failed to fetch comments");
             }
 
         }catch(err){
@@ -96,9 +117,9 @@ export const CommentPost=createAsyncThunk(
     }
 )
 
-export const getAllComments=createAsyncThunk(
-    "post/getAllComments",
-    async(postId,thunkAPI)=>{
+export const getCommentsByPostId=createAsyncThunk(
+    "post/getCommentsByPostId",
+    async (postId,thunkAPI)=>{
         try{
             const response=await clientServer.get("/comments",{
                 params: { post_id: postId }
