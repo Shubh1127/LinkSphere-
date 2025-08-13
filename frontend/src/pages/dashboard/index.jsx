@@ -7,7 +7,11 @@ import {
   logoutUser,
 } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
-import { createPost, getAllPosts } from "@/config/redux/action/postAction";
+import {
+  createPost,
+  deletePost,
+  getAllPosts,
+} from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { BASE_URL } from "@/config";
@@ -46,11 +50,17 @@ const Dashboard = ({ token }) => {
   const [postContent, setPostContent] = useState("");
   const [fileContent, setFileContent] = useState();
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [deletePostId, setDeletePostId] = useState(null);
 
   const handlePostSubmit = async () => {
     console.log("Post content:", postContent);
-    dispatch(createPost({ file: fileContent, body: postContent }));
+    await dispatch(createPost({ file: fileContent, body: postContent }));
     setPostContent("");
+    dispatch(getAllPosts());
+  };
+  const handleDeletePost = (postId) => {
+    console.log("Delete post ID:", postId);
+    dispatch(deletePost(postId));
   };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -194,9 +204,7 @@ const Dashboard = ({ token }) => {
                           className="w-17 h-17"
                         />
                       </div>
-                      <div
-                        className="flex flex-col  flex-1"
-                      >
+                      <div className="flex flex-col  flex-1">
                         <p className="font-bold">{post.userId.username}</p>
                         <p className="text-md text-gray-500">
                           {post.userId.name}
@@ -220,20 +228,53 @@ const Dashboard = ({ token }) => {
                           })()}
                         </p>
                       </div>
-                      <div className=" flex w-max relative   justify-end">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          className="size-6"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.5 12a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm6 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm6 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
+                      {post.userId._id === authState?.user?.userId?._id && (
+                        <div className=" flex w-max relative ellipse-symbol   justify-end">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-6 cursor-pointer relative"
+                            onClick={() =>
+                              setDeletePostId(
+                                deletePostId === post._id ? null : post._id
+                              )
+                            }
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4.5 12a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm6 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm6 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          {deletePostId === post._id && (
+                            <div className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 w-max">
+                              <button
+                                onClick={() => {
+                                  handleDeletePost(post._id);
+                                  console.log("Delete post:", post._id);
+                                  setDeletePostId(null);
+                                }}
+                                className="text-red-500 hover:text-red-700 flex cursor-pointer"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="size-6"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <p>Delete Post</p>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <p className="px-2 py-1">{post.body}</p>
@@ -248,9 +289,11 @@ const Dashboard = ({ token }) => {
                       )}
                     </div>
                     <div className="flex flex-col  gap-2 px-2 py-1">
-                      <div className="flex items-center ">{post.likes}</div>
+                      
+                      
                       <hr />
                       <div className="flex justify-evenly">
+                        <div className="flex items-center gap-1 cursor-pointer">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -265,6 +308,8 @@ const Dashboard = ({ token }) => {
                             d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z"
                           />
                         </svg>
+                        <div className="flex items-center ">{post.likes}</div>
+                        </div>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"

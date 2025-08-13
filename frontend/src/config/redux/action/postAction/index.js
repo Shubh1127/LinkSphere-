@@ -40,3 +40,77 @@ export const createPost=createAsyncThunk(
         }
     }
 )
+
+export const deletePost=createAsyncThunk(
+    "post/deletePost",
+    async(postId,thunkAPI)=>{
+        try{
+            const response=await clientServer.delete('delete_post',{
+                data: { post_id: postId }
+            });
+            if(response.status===200){
+                return thunkAPI.fulfillWithValue("Post deleted successfully");
+            }else{
+                return thunkAPI.rejectWithValue("Failed to delete post");
+            }
+
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+)
+export const increment_Likes=createAsyncThunk(
+    "post/increment_Likes",
+    async (postId,thunkAPI)=>{
+        try{
+            const response=await clientServer.post("/like",{
+                post_id:postId
+            });
+            if(response.status===200){
+                return thunkAPI.fulfillWithValue("Post liked successfully");
+            }else{
+                return thunkAPI.rejectWithValue("Failed to like post");
+            }
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+)
+export const CommentPost=createAsyncThunk(
+    "post/CommentPost",
+    async(postId,comment,thunkAPI)=>{
+        try{
+            const response=await clientServer.post("/comment",{
+                post_id:postId,
+                comment:comment
+            });
+            if(response.status===200){
+                return thunkAPI.fulfillWithValue("Comment added successfully");
+            }else{
+                return thunkAPI.rejectWithValue("Failed to add comment");
+            }
+
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+)
+
+export const getAllComments=createAsyncThunk(
+    "post/getAllComments",
+    async(postId,thunkAPI)=>{
+        try{
+            const response=await clientServer.get("/comments",{
+                params: { post_id: postId }
+            });
+            if(response.status===200){
+                return thunkAPI.fulfillWithValue(response.data);
+            }else{
+                return thunkAPI.rejectWithValue("Failed to fetch comments");
+            }
+
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+)

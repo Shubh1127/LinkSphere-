@@ -30,7 +30,7 @@ const NavbarComponent = ({ token }) => {
   },[]);
   
   return (
-    <div className="flex items-baseline justify-between m-4 sticky top-2 z-50 ">
+    <div className="flex items-baseline justify-between p-3 sticky top-0 z-50 bg-white ">
       <div
         className="font-bold text-2xl ps-12 cursor-pointer"
         onClick={() => {

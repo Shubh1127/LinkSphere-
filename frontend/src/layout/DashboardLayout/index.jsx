@@ -17,7 +17,7 @@ export default function DashboardLayout({ children, token }) {
   return (
     <div className=" flex  w-full mt-5 gap-2">
       <div className="homeContainer ">
-        <div className="homeContainer_leftBar flex items-start ps-6 py-2  flex-col gap-4 w-[15vw] sticky top-0 h-max ">
+        <div className="homeContainer_leftBar flex items-start ps-6 py-2  flex-col gap-4 w-[15vw] sticky top-15 h-max ">
           <div
             onClick={() => router.push("/dashboard")}
             className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out"
@@ -36,7 +36,7 @@ export default function DashboardLayout({ children, token }) {
                 d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
               />
             </svg>
-            Scroll
+            Home
           </div>
           <div
             onClick={() => router.push("/discover")}
@@ -84,7 +84,9 @@ export default function DashboardLayout({ children, token }) {
       <div className="h-max flex flex-col   flex-[0.5] ms-13 justify-between">
         <h1 className="font-semibold mb-2 ms-2">Top Profiles</h1>
         {authState.all_profiles_fetched &&
-          authState.all_users.map((profile) => {
+          authState.all_users
+          .filter(profile=>profile.userId?._id !==authState?.user?.userId?._id)
+          .map((profile) => {
             return (
               <div>
                 <div className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out">
