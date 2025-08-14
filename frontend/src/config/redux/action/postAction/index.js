@@ -135,3 +135,14 @@ export const getCommentsByPostId=createAsyncThunk(
         }
     }
 )
+export const deleteComment =createAsyncThunk(
+    "post/deleteComment",
+    async (commentId,thunkAPI)=>{
+        try{
+            
+
+        }catch(err){
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+)

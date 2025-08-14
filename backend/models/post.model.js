@@ -40,11 +40,13 @@ const postSchema=mongoose.Schema({
         default:true
 
     },
-    comments:{
-        type:Array,
-        default:[]
-
-    },
+    comments:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"comments",
+            default:[]
+        }
+    ],
     fileType:{
         type:String,
         default:''
