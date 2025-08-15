@@ -214,11 +214,7 @@ const Dashboard = ({ token }) => {
                 </div>
               ) : postState.posts.length > 0 ? (
                 postState.posts.map((post) => (
-                  <div
-                    key={post._id}
-                    className="postCard outline my-2"
-                    onClick={() => setPopupPost(post)}
-                  >
+                  <div key={post._id} className="postCard outline my-2">
                     <div className="flex   gap-2  m-1">
                       <div>
                         <img
@@ -358,6 +354,7 @@ const Dashboard = ({ token }) => {
                             strokeWidth={1.5}
                             stroke="currentColor"
                             className="size-6"
+                            onClick={() => setPopupPost(post)}
                           >
                             <path
                               strokeLinecap="round"
@@ -396,65 +393,16 @@ const Dashboard = ({ token }) => {
                           />
                         </svg>
                       </div>
-                      {commentBoxId === post._id ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Add a comment..."
-                            className="flex-1 border rounded-lg px-2 py-1"
-                            onChange={(e) => setCommentBoxId(e.target.value)}
-                          />
-                          <button
-                            className="bg-blue-500 text-white px-3 py-1 rounded-lg"
-                            onClick={() => {
-                              dispatch(
-                                CommentPost({
-                                  postId: post._id,
-                                  comment: commentInput,
-                                })
-                              );
-                              setCommentInput("");
-                              setCommentBoxId(null);
-                            }}
-                          >
-                            Post
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            placeholder="Add a comment..."
-                            className="flex-1 border rounded-lg px-2 py-1"
-                            value={commentInput}
-                            onChange={(e) => setCommentInput(e.target.value)}
-                          />
-                          <button
-                            className="bg-blue-500 text-white px-3 py-1 rounded-lg"
-                            onClick={() => {
-                              dispatch(
-                                CommentPost({
-                                  postId: post._id,
-                                  comment: commentInput,
-                                })
-                              );
-                              setCommentInput("");
-                              setCommentBoxId(null);
-                            }}
-                          >
-                            Post
-                          </button>
-                        </div>
-                      )}
                     </div>
                     <div>
+                      {/* comments in the bottom of the post */}
                       {post.comments.length > 0 && (
                         <>
-                          <h2 className="text-lg font-semibold mx-1 my-1">
+                          <h2 className="text-lg font-semibold mx-1 px-1 my-1">
                             Comments
                           </h2>
                           <div className="mt-2">
-                            {post.comments.map((comment) => (
+                            {post.comments.slice(-2).map((comment) => (
                               <div
                                 key={comment._id}
                                 className="border-b py-2 flex gap-1 justify-between items-center mx-2"
@@ -494,7 +442,7 @@ const Dashboard = ({ token }) => {
                                         d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                       />
                                     </svg>
-                                    {deleteCommentId && (
+                                    {deleteCommentId===comment._id && (
                                       <div className="absolute bg-gray-300 px-1 py-1 rounded-md text-red-400 flex cursor-pointer hover:text-red-500 ">
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -548,7 +496,7 @@ const Dashboard = ({ token }) => {
                     />
                   </div>
                   {/* Right: CommentsDash */}
-                  <div className="w-1/2 p-2 overflow-y-auto  flex flex-col h-full">
+                  <div className="w-1/2 px-2   flex flex-col h-full">
                     <div className="flex gap-2 mb-2 border-b py-1 ">
                       <div className="flex ">
                         <img
@@ -580,8 +528,8 @@ const Dashboard = ({ token }) => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col p-1 justify-between  h-full ">
-                      <div className="flex-1 ">
+                    <div className="flex flex-col  justify-between  h-full ">
+                      <div className="flex-1  overflow-y-auto max-h-[38vh]" >
                         {/* <h2 className="text-lg font-semibold mb-4">Comments</h2> */}
                         {popupPost.comments.length > 0 ? (
                           popupPost.comments.map((comment) => (
@@ -612,7 +560,7 @@ const Dashboard = ({ token }) => {
                         )}
                         {/* Add comment input here if needed */}
                       </div>
-                      <div className="border-t p-2 flex flex-col gap-3">
+                      <div className="border-t pt-1  flex flex-col gap-3">
                         <div className="flex gap-4 ">
                           <span className="flex flex-col items-center">
                             <svg
@@ -664,14 +612,14 @@ const Dashboard = ({ token }) => {
                             </svg>
                           </span>
                         </div>
-                        <div className="flex flex-col">
-                          <div className="text-lg">
+                        <div className="flex flex-col ">
+                          <div className="text-lg ps-1">
                             <p>
                               {popupPost.likes} Like
                               {popupPost.likes !== 1 && "s"}
                             </p>
                           </div>
-                          <div className="text-gray-500 text-sm">
+                          <div className="text-gray-500 text-sm ps-1">
                             {(() => {
                               const createdAt = new Date(popupPost.createdAt);
                               const now = new Date();
@@ -701,6 +649,68 @@ const Dashboard = ({ token }) => {
                                 } ago`;
                               }
                             })()}
+                          </div>
+                          <div className="">
+                            {commentBoxId === popupPost._id ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Add a comment..."
+                                  className="flex-1  px-2 py-1"
+                                  onChange={(e) =>
+                                    setCommentBoxId(e.target.value)
+                                  }
+                                />
+                                <button
+                                  className="bg-blue-500 text-white px-3 py-1 rounded-lg"
+                                  onClick={() => {
+                                    dispatch(
+                                      CommentPost({
+                                        postId: popupPost._id,
+                                        comment: commentInput,
+                                      })
+                                    );
+                                    setCommentInput("");
+                                    setCommentBoxId(null);
+                                  }}
+                                >
+                                  Post
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center  gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Add a comment..."
+                                  className="flex-1 px-2 py-2 outline-none "
+                                  value={commentInput}
+                                  onChange={(e) =>
+                                    setCommentInput(e.target.value)
+                                  }
+                                />
+                                <button
+                                  className=" text-black cursor-pointer px-3 py-1 rounded-lg"
+                                  onClick={() => {
+                                    dispatch(
+                                      CommentPost({
+                                        postId: popupPost._id,
+                                        comment: commentInput,
+                                      })
+                                    ).then(() => {
+                                      const updatedPost = postState.posts.find(
+                                        (p) => p._id === popupPost._id
+                                      );
+                                      if (updatedPost)
+                                        setPopupPost(updatedPost);
+                                    });
+                                    setCommentInput("");
+                                    setCommentBoxId(null);
+                                  }}
+                                >
+                                  Post
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

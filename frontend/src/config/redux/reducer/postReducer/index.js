@@ -1,4 +1,4 @@
-import { CommentPost, deletePost, getAllPosts, increment_Likes ,getAllComments,getCommentsByPostId} from "../../action/postAction"
+import { CommentPost, deletePost, getAllPosts, increment_Likes ,getAllComments,getCommentsByPostId,deleteComment} from "../../action/postAction"
 
 const { createSlice } = require("@reduxjs/toolkit")
 
@@ -119,6 +119,21 @@ const postSlice=createSlice({
             state.isLoading=false
             state.isError=true
             state.message=action.payload.message || "Failed to fetch comments"
+        })
+        .addCase(deleteComment.rejected, (state, action) => {
+            state.isLoading = false;
+            state.isError = true;
+            state.message = action.payload.message || "Failed to delete comment";
+        })
+        .addCase(deleteComment.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isError = false;
+            state.message = action.payload.message || "Comment deleted successfully";
+            state.comments = state.comments.filter(comment => comment._id !== action.meta.arg);
+        })
+        .addCase(deleteComment.pending, (state) => {
+            state.isLoading = true;
+            state.message = "Deleting comment...";
         })
     }
 })

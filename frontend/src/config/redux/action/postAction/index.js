@@ -86,7 +86,7 @@ export const CommentPost = createAsyncThunk(
       });
       if (response.status === 200) {
         return thunkAPI.fulfillWithValue({
-          postId,
+          postId: response.data.postId,
           comment: response.data.comment // assuming backend returns the new comment
         });
       } else {
@@ -139,10 +139,18 @@ export const deleteComment =createAsyncThunk(
     "post/deleteComment",
     async (commentId,thunkAPI)=>{
         try{
-            
+            const response=await clientServer.delete("/delete_comment",{
+                data:{commentId}
+            })
+            if(response.status===200){
+                return thunkAPI.fulfillWithValue("Comment deleted successfully");
+            }else{
+                return thunkAPI.rejectWithValue("Failed to delete comment");
+            }
 
         }catch(err){
             return thunkAPI.rejectWithValue(err.response.data);
         }
     }
 )
+

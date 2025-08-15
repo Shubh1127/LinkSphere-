@@ -129,10 +129,11 @@ export const commentPost=async(req,res)=>{
             body:comment
         }
         const commentPost=await Comment.create(newComment);
+        await commentPost.populate("userId","username name profilePicture");
         post.comments.push(commentPost._id);
         post.updatedAt=Date.now();
         await post.save(); 
-        return res.status(201).json({message:"Comment added successfully", comment:commentPost});
+        return res.status(201).json({message:"Comment added successfully", comment:commentPost,postId: post._id});
     }catch(err){
         console.error("Error in commentPost:", err);
         return res.status(500).json({message:err.message})
