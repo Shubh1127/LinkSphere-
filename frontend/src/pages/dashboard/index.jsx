@@ -307,7 +307,7 @@ const Dashboard = ({ token }) => {
                         />
                       )}
                     </div>
-                    <div className="flex flex-col  gap-2 px-2 py-1">
+                    <div className="flex flex-col  gap-1 px-2 py-1">
                       <hr />
                       <div className="flex justify-evenly">
                         <div className="flex items-center gap-1 cursor-pointer">
