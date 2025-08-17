@@ -202,3 +202,26 @@ export const deleteComment=async(req,res)=>{
         return res.status(500).json({message:err.message})
     }
 }
+
+export const getPostsByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) return res.status(400).json({ message: "Username is required" });
+
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const posts = await Post.find({ userId: user._id })
+      .sort({ createdAt: -1 })
+      .populate("userId", "username name email profilePicture")
+      .populate({
+        path: "comments",
+        options: { sort: { createdAt: 1 } },
+        populate: { path: "userId", select: "username name profilePicture" }
+      });
+
+    return res.status(200).json({ posts });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
