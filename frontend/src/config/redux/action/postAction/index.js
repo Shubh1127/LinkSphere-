@@ -80,20 +80,10 @@ export const CommentPost = createAsyncThunk(
   "post/CommentPost",
   async ({ postId, comment }, thunkAPI) => {
     try {
-      const response = await clientServer.post("/comment", {
-        post_id: postId,
-        comment: comment
-      });
-      if (response.status === 200) {
-        return thunkAPI.fulfillWithValue({
-          postId: response.data.postId,
-          comment: response.data.comment // assuming backend returns the new comment
-        });
-      } else {
-        return thunkAPI.rejectWithValue("Failed to add comment");
-      }
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      const res = await clientServer.post("/comment", { post_id: postId, comment });
+      return thunkAPI.fulfillWithValue({ postId, comment: res.data.comment }); // populated
+    } catch (e) {
+      return thunkAPI.rejectWithValue(e.response?.data || { message: "Failed to add comment" });
     }
   }
 )

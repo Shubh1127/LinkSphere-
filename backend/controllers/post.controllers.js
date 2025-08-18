@@ -105,40 +105,33 @@ export const increment_Likes = async (req, res) => {
     }
 };
 
-export const commentPost=async(req,res)=>{
-    try{
-        const token=req.cookies.token;
-        if(!token){
-            return res.status(401).json({message:"Unauthorized"})
-        }
-        const user=await User.findOne({token:token})
-        if(!user){
-            return res.status(400).json({message:"User not found"})
-        }
-        const {post_id,comment}=req.body;
-        if(!post_id || !comment){
-            return res.status(400).json({message:"Post ID and comment are required"})
-        }
-        const post=await Post.findOne({_id:post_id});
-        if(!post){
-            return res.status(400).json({message:"Post not found"})
-        }
-        const newComment={
-            userId:user._id,
-            postId:post._id,
-            body:comment
-        }
-        const commentPost=await Comment.create(newComment);
-        await commentPost.populate("userId","username name profilePicture");
-        post.comments.push(commentPost._id);
-        post.updatedAt=Date.now();
-        await post.save(); 
-        return res.status(201).json({message:"Comment added successfully", comment:commentPost,postId: post._id});
-    }catch(err){
-        console.error("Error in commentPost:", err);
-        return res.status(500).json({message:err.message})
+export const commentPost = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
-}
+    const user = await User.findOne({ token: token });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const { post_id, comment } = req.body;
+    if (!post_id || !comment) {
+      return res.status(400).json({ message: "Post ID and comment are required" });
+    }
+    const post = await Post.findOne({ _id: post_id });
+    if (!post) {
+      return res.status(400).json({ message: "Post not found" });
+    }
+    const doc = await Comment.create({ userId: user._id, postId: post._id, body: req.body.comment });
+    await doc.populate("userId", "username name profilePicture");
+    post.comments.push(doc._id);
+    await post.save();
+    return res.status(201).json({ comment: doc });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+};
 
 export const getAllComments=async(req,res)=>{
     try{
