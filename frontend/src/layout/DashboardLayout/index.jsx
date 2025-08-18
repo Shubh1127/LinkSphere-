@@ -1,19 +1,20 @@
 import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect } from "react"; 
+// import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 export default function DashboardLayout({ children, token }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
-  //   console.log("authState data in dashboardlayout",authState)
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!token) {
-      router.push("/");
-    }
-    dispatch(setTokenIsThere());
-  });
+    if (!router.isReady) return;
+    if (token === undefined) return;
+    if (!token) router.push("/");
+    else dispatch(setTokenIsThere());
+  }, [token, router.isReady, dispatch]);
+
   return (
     <div className=" flex  w-full mt-5 gap-2">
       <div className="homeContainer ">
@@ -89,7 +90,7 @@ export default function DashboardLayout({ children, token }) {
           .map((profile) => {
             return (
               <div>
-                <div className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out">
+                <div onClick={() => router.push(`/u/${profile.userId?.username}`)} className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out">
                   {profile.userId?.profilePicture ? (
                     <img
                       src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"

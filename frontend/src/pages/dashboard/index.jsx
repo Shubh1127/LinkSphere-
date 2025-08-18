@@ -11,6 +11,7 @@ import {
   CommentPost,
   getCommentsByPostId,
   getAllComments,
+  deleteComment, // filepath import added
 } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
@@ -100,6 +101,13 @@ const Dashboard = ({ token }) => {
       dispatch(getAllUsers());
     }
   }, [authState.isTokenThere, dispatch]);
+
+  useEffect(() => {
+    if (popupPost) {
+      const updated = postState.posts.find((p) => p._id === popupPost._id);
+      if (updated) setPopupPost(updated);
+    }
+  }, [postState.posts, popupPost]);
 
   if (authState.user.length !== 0) {
     return (
@@ -354,7 +362,10 @@ const Dashboard = ({ token }) => {
                             strokeWidth={1.5}
                             stroke="currentColor"
                             className="size-6"
-                            onClick={() => setPopupPost(post)}
+                            onClick={() => {
+                              setPopupPost(post);
+                              dispatch(getCommentsByPostId(post._id));
+                            }}
                           >
                             <path
                               strokeLinecap="round"
@@ -443,8 +454,14 @@ const Dashboard = ({ token }) => {
                                       />
                                     </svg>
                                     {deleteCommentId===comment._id && (
-                                      <div className="absolute bg-gray-300 px-1 py-1 rounded-md text-red-400 flex cursor-pointer hover:text-red-500 ">
-                                        <svg
+                                      <div
+                                        className="absolute bg-gray-300 px-1 py-1 rounded-md text-red-400 flex cursor-pointer hover:text-red-500 "
+                                        onClick={() => {
+                                          dispatch(deleteComment(comment._id));
+                                          setDeleteCommentId(null);
+                                        }}
+                                      >
+                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
                                           fill="none"
                                           viewBox="0 0 24 24"
@@ -529,35 +546,35 @@ const Dashboard = ({ token }) => {
                       </div>
                     </div>
                     <div className="flex flex-col  justify-between  h-full ">
-                      <div className="flex-1  overflow-y-auto max-h-[38vh]" >
-                        {/* <h2 className="text-lg font-semibold mb-4">Comments</h2> */}
-                        {popupPost.comments.length > 0 ? (
-                          popupPost.comments.map((comment) => (
-                            <div
-                              key={comment._id}
-                              className=" py-2 flex gap-2 items-center"
-                            >
-                              <img
-                                src={`${BASE_URL}/${comment.userId.profilePicture}`}
-                                alt={comment.userId.username}
-                                className="w-8 h-8 rounded-full"
-                              />
-                              <div>
-                                <p>
-                                  <span className="font-semibold">
-                                    {comment.userId.username}
-                                  </span>
-                                  &nbsp;<span>{comment.body}</span>
-                                </p>
-                                {/* <p>{comment.body}</p> */}
+                      <div className="flex-1  overflow-y-auto max-h-[38vh]">
+                        {(() => {
+                          const list =
+                            postState.commentsByPostId[popupPost._id] ??
+                            popupPost.comments ?? [];
+                          return list.length > 0 ? (
+                            list.map((comment) => (
+                              <div key={comment._id} className="py-2 flex gap-2 items-center">
+                                <img
+                                  src={`${BASE_URL}/${comment.userId.profilePicture}`}
+                                  alt={comment.userId.username}
+                                  className="w-8 h-8 rounded-full"
+                                />
+                                <div>
+                                  <p>
+                                    <span className="font-semibold">
+                                      {comment.userId.username}
+                                    </span>
+                                    &nbsp;<span>{comment.body}</span>
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-500 text-center">
-                            No comments yet.
-                          </p>
-                        )}
+                            ))
+                          ) : (
+                            <p className="text-gray-500 text-center">
+                              No comments yet.
+                            </p>
+                          );
+                        })()}
                         {/* Add comment input here if needed */}
                       </div>
                       <div className="border-t pt-1  flex flex-col gap-3">

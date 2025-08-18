@@ -175,32 +175,35 @@ export const getCommentsByPostId=async(req,res)=>{
     }
 }
 
-export const deleteComment=async(req,res)=>{
-    try{
-        const token=req.cookies.token;
-        if(!token){
-            return res.status(401).json({message:"Unauthorized"})
-        }
-        const user=await User.findOne({token:token});
-        if(!user){
-            return res.status(400).json({message:"User not found"})
-        }
-        const {comment_id}=req.body;
-        if(!comment_id){
-            return res.status(400).json({message:"Comment ID is required"})
-        }
-        const comment=await Comment.findOne({_id:comment_id});
-        if(!comment){
-            return res.status(400).json({message:"Comment not found"})
-        }
-        if(comment.userId.toString() !== user._id.toString()){
-            return res.status(400).json({message:"You can't delete this comment"})
-        }
-        await Comment.deleteOne({_id:comment_id});
-        return res.status(200).json({message:"Comment deleted successfully"});
-    }catch(err){
-        return res.status(500).json({message:err.message})
+export const deleteComment = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    const { comment_id } = req.body; // expect `comment_id`
+    if (!comment_id) return res.status(400).json({ message: "Comment ID is required" });
+
+    const comment = await Comment.findById(comment_id);
+    if (!comment) return res.status(400).json({ message: "Comment not found" });
+
+    if (comment.userId.toString() !== user._id.toString()) {
+      return res.status(400).json({ message: "You can't delete this comment" });
     }
+
+    await Post.updateOne({ _id: comment.postId }, { $pull: { comments: comment._id } });
+    await Comment.deleteOne({ _id: comment_id });
+
+    return res.status(200).json({
+      message: "Comment deleted successfully",
+      postId: comment.postId,
+      commentId: comment._id
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
 }
 
 export const getPostsByUsername = async (req, res) => {

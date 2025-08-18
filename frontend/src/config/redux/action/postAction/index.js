@@ -118,39 +118,31 @@ export const getAllComments=createAsyncThunk(
 )
 
 export const getCommentsByPostId=createAsyncThunk(
-    "post/getCommentsByPostId",
-    async (postId,thunkAPI)=>{
-        try{
-            const response=await clientServer.get("/comments",{
-                params: { post_id: postId }
-            });
-            if(response.status===200){
-                return thunkAPI.fulfillWithValue(response.data);
-            }else{
-                return thunkAPI.rejectWithValue("Failed to fetch comments");
-            }
-
-        }catch(err){
-            return thunkAPI.rejectWithValue(err.response.data);
-        }
+  "post/getCommentsByPostId",
+  async (postId, thunkAPI) => {
+    try {
+      const response = await clientServer.get(`/comments/${postId}`);
+      if (response.status === 200) {
+        return thunkAPI.fulfillWithValue({ postId, comments: response.data.comments });
+      } else {
+        return thunkAPI.rejectWithValue("Failed to fetch comments");
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to fetch comments" });
     }
+  }
 )
-export const deleteComment =createAsyncThunk(
-    "post/deleteComment",
-    async (commentId,thunkAPI)=>{
-        try{
-            const response=await clientServer.delete("/delete_comment",{
-                data:{commentId}
-            })
-            if(response.status===200){
-                return thunkAPI.fulfillWithValue("Comment deleted successfully");
-            }else{
-                return thunkAPI.rejectWithValue("Failed to delete comment");
-            }
-
-        }catch(err){
-            return thunkAPI.rejectWithValue(err.response.data);
-        }
+export const deleteComment = createAsyncThunk(
+  "post/deleteComment",
+  async (commentId, thunkAPI) => {
+    try {
+      const response = await clientServer.delete("/delete_comment", {
+        data: { comment_id: commentId } // send comment_id
+      });
+      return thunkAPI.fulfillWithValue(response.data); // { message, postId, commentId }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to delete comment" });
     }
+  }
 )
 

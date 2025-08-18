@@ -2,15 +2,16 @@ import { CommentPost, deletePost, getAllPosts, increment_Likes ,getAllComments,g
 
 const { createSlice } = require("@reduxjs/toolkit")
 
-const initialState={
-    posts:[],
-    isError:false,
-    postFetched:false,
-    isLoading:false,
-    loggedIn:false,
-    message:"",
-    comments:[],
-    postId:"",
+const initialState = {
+    posts: [],
+    isError: false,
+    postFetched: false,
+    isLoading: false,
+    loggedIn: false,
+    message: "",
+    comments: [],              // optional global list
+    commentsByPostId: {},      // NEW: per-post cache
+    postId: "",
 }
 
 const postSlice=createSlice({
@@ -22,7 +23,7 @@ const postSlice=createSlice({
             state.postId=""
         },
     },
-    extraReducers:(builder)=>{
+    extraReducers: (builder) => {
         builder
         .addCase(getAllPosts.pending,(state)=>{
             state.isLoading=true
@@ -86,6 +87,10 @@ const postSlice=createSlice({
             if (postIndex !== -1) {
                 state.posts[postIndex].comments.push(action.payload.comment);
             }
+            const pid = action.payload.postId;
+            if (state.commentsByPostId[pid]) {
+                state.commentsByPostId[pid] = [...state.commentsByPostId[pid], action.payload.comment];
+            }
         })
         .addCase(CommentPost.rejected,(state,action)=>{
             state.isLoading=false
@@ -113,28 +118,55 @@ const postSlice=createSlice({
         .addCase(getCommentsByPostId.fulfilled,(state,action)=>{
             state.isLoading=false
             state.isError=false
-            state.comments=action.payload.comments; // Assuming action.payload contains the comments array
+            const { postId, comments } = action.payload;
+            state.commentsByPostId[postId] = comments;
         })
         .addCase(getCommentsByPostId.rejected,(state,action)=>{
             state.isLoading=false
             state.isError=true
             state.message=action.payload.message || "Failed to fetch comments"
         })
-        .addCase(deleteComment.rejected, (state, action) => {
-            state.isLoading = false;
-            state.isError = true;
-            state.message = action.payload.message || "Failed to delete comment";
-        })
-        .addCase(deleteComment.fulfilled, (state, action) => {
-            state.isLoading = false;
-            state.isError = false;
-            state.message = action.payload.message || "Comment deleted successfully";
-            state.comments = state.comments.filter(comment => comment._id !== action.meta.arg);
-        })
         .addCase(deleteComment.pending, (state) => {
             state.isLoading = true;
             state.message = "Deleting comment...";
         })
+        .addCase(deleteComment.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.isError = false;
+            state.message = action.payload.message || "Comment deleted";
+
+            const commentId = action.payload.commentId || action.meta.arg;
+            const postId = action.payload.postId;
+
+            if (postId) {
+                const idx = state.posts.findIndex(p => p._id === postId);
+                if (idx !== -1) {
+                    state.posts[idx].comments = state.posts[idx].comments.filter(c => (c._id || c) !== commentId);
+                }
+                if (state.commentsByPostId[postId]) {
+                    state.commentsByPostId[postId] = state.commentsByPostId[postId].filter(c => (c._id || c) !== commentId);
+                }
+            } else {
+                for (const p of state.posts) {
+                    const before = p.comments.length;
+                    p.comments = p.comments.filter(c => (c._id || c) !== commentId);
+                    if (p.comments.length !== before) break;
+                }
+                // optional sweep across all cached posts
+                Object.keys(state.commentsByPostId).forEach(pid => {
+                    state.commentsByPostId[pid] = state.commentsByPostId[pid].filter(c => (c._id || c) !== commentId);
+                });
+            }
+
+            if (state.comments) {
+                state.comments = state.comments.filter(c => c._id !== commentId);
+            }
+        })
+        .addCase(deleteComment.rejected, (state, action) => {
+            state.isLoading = false;
+            state.isError = true;
+            state.message = action.payload?.message || "Failed to delete comment";
+        });
     }
 })
 
