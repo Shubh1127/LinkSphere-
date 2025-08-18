@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./st.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { getAboutUser, getAllUsers } from "@/config/redux/action/authAction";
@@ -101,6 +101,21 @@ const Dashboard = ({ token }) => {
       if (updated) setPopupPost(updated);
     }
   }, [postState.posts, popupPost]);
+
+  useEffect(() => {
+    if (popupPost) {
+      const scrollBarComp = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      if (scrollBarComp) document.body.style.paddingRight = `${scrollBarComp}px`; // avoid layout shift
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    };
+  }, [popupPost]);
 
   if (authState.user.length !== 0) {
     return (
@@ -321,29 +336,35 @@ const Dashboard = ({ token }) => {
                             onClick={() => handleLikes(post._id)}
                             title="Like"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className={`size-6 ${
-                                post.likedBy?.includes(authState.user.userId)
-                                  ? "text-red-600"
-                                  : "text-gray-600"
-                              }`}
-                              fill={
-                                post.likedBy?.includes(authState.user.userId)
-                                  ? "currentColor"
-                                  : "none"
-                              }
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                              />
-                            </svg>
-                            <span>{post.likes}</span>
+                            {(() => {
+                              const userId = authState.user?.userId?._id;
+                              const liked =
+                                Array.isArray(post.likedBy) &&
+                                post.likedBy.some(
+                                  (id) => String(id) === String(userId)
+                                );
+                              return (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className={`size-6 ${
+                                      liked ? "text-red-600" : "text-gray-600"
+                                    }`}
+                                    fill={liked ? "currentColor" : "none"}
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                                    />
+                                  </svg>
+                                  <span>{post.likes}</span>
+                                </>
+                              );
+                            })()}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 cursor-pointer">
@@ -445,7 +466,7 @@ const Dashboard = ({ token }) => {
                                         d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                       />
                                     </svg>
-                                    {deleteCommentId===comment._id && (
+                                    {deleteCommentId === comment._id && (
                                       <div
                                         className="absolute bg-gray-300 px-1 py-1 rounded-md text-red-400 flex cursor-pointer hover:text-red-500 "
                                         onClick={() => {
@@ -453,7 +474,7 @@ const Dashboard = ({ token }) => {
                                           setDeleteCommentId(null);
                                         }}
                                       >
-                                         <svg
+                                        <svg
                                           xmlns="http://www.w3.org/2000/svg"
                                           fill="none"
                                           viewBox="0 0 24 24"
@@ -498,19 +519,17 @@ const Dashboard = ({ token }) => {
                   </button>
                   {/* Left: Post */}
                   <div className="w-1/2  border-r  ">
-                  {
-                    popupPost.media ?
+                    {popupPost.media ? (
                       <img
                         src={`${BASE_URL}/${popupPost.media}`}
                         alt="Post media "
                         className="w-full h-full "
                       />
-                    : (
+                    ) : (
                       <div className="flex justify-center items-center h-full">
                         <p className="text-gray-500">No media available</p>
                       </div>
-                    )
-                  }
+                    )}
                   </div>
                   {/* Right: CommentsDash */}
                   <div className="w-1/2 px-2   flex flex-col h-full">
@@ -550,16 +569,20 @@ const Dashboard = ({ token }) => {
                         {(() => {
                           const list =
                             postState.commentsByPostId[popupPost._id] ??
-                            popupPost.comments ?? [];
+                            popupPost.comments ??
+                            [];
                           return list.length > 0 ? (
                             list.map((comment) => (
-                              <div key={comment._id} className="py-2 flex gap-2 items-center">
-                                <img
-                                  src={`${BASE_URL}/${comment.userId.profilePicture}`}
-                                  alt={comment.userId.username}
-                                  className="w-8 h-8 rounded-full"
-                                />
-                                <div>
+                              <div
+                                key={comment._id}
+                                className="py-2 flex justify-between items-center gap-2 relative"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={`${BASE_URL}/${comment.userId.profilePicture}`}
+                                    alt={comment.userId.username}
+                                    className="w-8 h-8 rounded-full"
+                                  />
                                   <p>
                                     <span className="font-semibold">
                                       {comment.userId.username}
@@ -567,6 +590,66 @@ const Dashboard = ({ token }) => {
                                     &nbsp;<span>{comment.body}</span>
                                   </p>
                                 </div>
+
+                                {comment.userId._id ===
+                                  authState.user.userId._id && (
+                                  <div className="relative">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth={1.5}
+                                      stroke="currentColor"
+                                      className="size-6 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                      onClick={() =>
+                                        setDeleteCommentId(
+                                          deleteCommentId === comment._id
+                                            ? null
+                                            : comment._id
+                                        )
+                                      }
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                      />
+                                    </svg>
+
+                                    {deleteCommentId === comment._id && (
+                                      <div
+                                        className="absolute right-0 top-7 w-max bg-white border rounded-md shadow px-1 py-1 text-red-500 hover:bg-gray-100 cursor-pointer z-10 flex items-center gap-1"
+                                        onClick={() => {
+                                          dispatch(
+                                            deleteComment(comment._id)
+                                          ).then(() => {
+                                            // Ensure popup list updates; this does NOT refresh the feed
+                                            dispatch(
+                                              getCommentsByPostId(popupPost._id)
+                                            );
+                                          });
+                                          setDeleteCommentId(null);
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          strokeWidth={1.5}
+                                          stroke="currentColor"
+                                          className="size-5"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                          />
+                                        </svg>
+                                        <span className="text-sm">Delete comment</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             ))
                           ) : (
@@ -581,26 +664,64 @@ const Dashboard = ({ token }) => {
                         <div className="flex gap-4 ">
                           <span
                             className={`flex flex-col items-center cursor-pointer ${
-                              postState.likeLoadingByPostId[popupPost._id] ? "opacity-50 pointer-events-none" : ""
+                              postState.likeLoadingByPostId[popupPost._id]
+                                ? "opacity-50 pointer-events-none"
+                                : ""
                             }`}
-                            onClick={() => handleLikes(popupPost._id)}
+                            onClick={() => {
+                              const uid = authState.user?.userId?._id;
+                              // optimistic UI update
+                              setPopupPost((prev) => {
+                                if (!prev) return prev;
+                                const already =
+                                  Array.isArray(prev.likedBy) &&
+                                  prev.likedBy.some(
+                                    (id) => String(id) === String(uid)
+                                  );
+                                const nextLikedBy = already
+                                  ? prev.likedBy.filter(
+                                      (id) => String(id) !== String(uid)
+                                    )
+                                  : [...(prev.likedBy || []), uid];
+                                const nextLikes = already
+                                  ? Math.max(0, (prev.likes || 0) - 1)
+                                  : (prev.likes || 0) + 1;
+                                return {
+                                  ...prev,
+                                  likedBy: nextLikedBy,
+                                  likes: nextLikes,
+                                };
+                              });
+                              handleLikes(popupPost._id); // will update Redux; your sync useEffect will reconcile
+                            }}
                             title="Like"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill={popupPost.likedBy?.includes(authState.user.userId) ? "currentColor" : "none"}
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className={`size-6 ${popupPost.likedBy?.includes(authState.user.userId) ? "text-red-600" : ""}`}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                              />
-                            </svg>
-                            {/* <span className="text-xs">{popupPost.likes}</span> */}
+                            {(() => {
+                              const uid = authState.user?.userId?._id;
+                              const liked =
+                                Array.isArray(popupPost.likedBy) &&
+                                popupPost.likedBy.some(
+                                  (id) => String(id) === String(uid)
+                                );
+                              return (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill={liked ? "currentColor" : "none"}
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={1.5}
+                                  stroke="currentColor"
+                                  className={`size-6 ${
+                                    liked ? "text-red-600" : ""
+                                  }`}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                                  />
+                                </svg>
+                              );
+                            })()}
                           </span>
                           <span>
                             <svg
@@ -682,7 +803,9 @@ const Dashboard = ({ token }) => {
                                   placeholder="Add a comment..."
                                   className="flex-1  px-2 py-1"
                                   value={commentInput}
-                                  onChange={(e) => setCommentInput(e.target.value)}
+                                  onChange={(e) =>
+                                    setCommentInput(e.target.value)
+                                  }
                                 />
                                 <button
                                   className="bg-blue-500 text-white px-3 py-1 rounded-lg"
@@ -715,9 +838,17 @@ const Dashboard = ({ token }) => {
                                   className=" text-black cursor-pointer px-3 py-1 rounded-lg"
                                   onClick={() => {
                                     if (!commentInput.trim()) return;
-    dispatch(CommentPost({ postId: popupPost._id, comment: commentInput.trim() }))
-      .then(() => dispatch(getCommentsByPostId(popupPost._id))); // refresh only this list
-    setCommentInput("");
+                                    dispatch(
+                                      CommentPost({
+                                        postId: popupPost._id,
+                                        comment: commentInput.trim(),
+                                      })
+                                    ).then(() =>
+                                      dispatch(
+                                        getCommentsByPostId(popupPost._id)
+                                      )
+                                    ); // refresh only this list
+                                    setCommentInput("");
                                   }}
                                 >
                                   Post

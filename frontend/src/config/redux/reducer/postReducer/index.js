@@ -14,15 +14,15 @@ const initialState = {
   posts: [],
   isError: false,
   postFetched: false,
-  isLoading: false,           // keep if you use it elsewhere
-  isLoadingPosts: false,      // used by the feed loader in the component
+  isLoading: false, // keep if you use it elsewhere
+  isLoadingPosts: false, // used by the feed loader in the component
   loggedIn: false,
   message: "",
   comments: [],
   commentsByPostId: {},
   commentLoadingByPostId: {}, // FIX: ensure this exists
   postId: "",
-  likeLoadingByPostId: {},   // NEW
+  likeLoadingByPostId: {}, // NEW
 };
 
 const postSlice = createSlice({
@@ -37,7 +37,7 @@ const postSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getAllPosts.pending, (state) => {
-        state.isLoadingPosts = true;               // use isLoadingPosts for the feed
+        state.isLoadingPosts = true; // use isLoadingPosts for the feed
         state.message = "Loading all the posts...";
       })
       .addCase(getAllPosts.fulfilled, (state, action) => {
@@ -97,23 +97,27 @@ const postSlice = createSlice({
       })
       .addCase(CommentPost.fulfilled, (state, action) => {
         const { postId, comment } = action.payload || {};
-        if (!state.commentLoadingByPostId) state.commentLoadingByPostId = {};  // guard
+        if (!state.commentLoadingByPostId) state.commentLoadingByPostId = {}; // guard
         if (postId) state.commentLoadingByPostId[postId] = false;
 
         if (!postId || !comment) return;
         const idx = state.posts.findIndex((p) => p._id === postId);
         if (idx !== -1) {
-          if (!Array.isArray(state.posts[idx].comments)) state.posts[idx].comments = [];
+          if (!Array.isArray(state.posts[idx].comments))
+            state.posts[idx].comments = [];
           state.posts[idx].comments.push(comment);
         }
         if (state.commentsByPostId[postId]) {
-          state.commentsByPostId[postId] = [...state.commentsByPostId[postId], comment];
+          state.commentsByPostId[postId] = [
+            ...state.commentsByPostId[postId],
+            comment,
+          ];
         }
         state.message = "Comment added";
       })
       .addCase(CommentPost.rejected, (state, action) => {
         const pid = action.meta?.arg?.postId;
-        if (!state.commentLoadingByPostId) state.commentLoadingByPostId = {};  // guard
+        if (!state.commentLoadingByPostId) state.commentLoadingByPostId = {}; // guard
         if (pid) state.commentLoadingByPostId[pid] = false;
         state.isError = true;
         state.message = action.payload?.message || "Failed to add comment";
@@ -152,27 +156,31 @@ const postSlice = createSlice({
         state.message = "Deleting comment...";
       })
       .addCase(deleteComment.fulfilled, (state, action) => {
-      const { postId, commentId } = action.payload || {};
-      const idToRemove = commentId ?? action.meta.arg;
+        const { postId, commentId } = action.payload || {};
+        const idToRemove = commentId ?? action.meta.arg;
 
-      if (postId) {
-        const idx = state.posts.findIndex(p => p._id === postId);
-        if (idx !== -1 && Array.isArray(state.posts[idx].comments)) {
-          state.posts[idx].comments = state.posts[idx].comments.filter(c => (c?._id || c) !== idToRemove);
+        if (postId) {
+          const idx = state.posts.findIndex((p) => p._id === postId);
+          if (idx !== -1 && Array.isArray(state.posts[idx].comments)) {
+            state.posts[idx].comments = state.posts[idx].comments.filter(
+              (c) => (c?._id || c) !== idToRemove
+            );
+          }
+          if (state.commentsByPostId[postId]) {
+            state.commentsByPostId[postId] = state.commentsByPostId[
+              postId
+            ].filter((c) => (c?._id || c) !== idToRemove);
+          }
+        } else {
+          for (const p of state.posts) {
+            if (!Array.isArray(p.comments)) continue;
+            const before = p.comments.length;
+            p.comments = p.comments.filter((c) => (c?._id || c) !== idToRemove);
+            if (p.comments.length !== before) break;
+          }
         }
-        if (state.commentsByPostId[postId]) {
-          state.commentsByPostId[postId] = state.commentsByPostId[postId].filter(c => (c?._id || c) !== idToRemove);
-        }
-      } else {
-        for (const p of state.posts) {
-          if (!Array.isArray(p.comments)) continue;
-          const before = p.comments.length;
-          p.comments = p.comments.filter(c => (c?._id || c) !== idToRemove);
-          if (p.comments.length !== before) break;
-        }
-      }
-      state.message = action.payload?.message || "Comment deleted";
-    })
+        state.message = action.payload?.message || "Comment deleted";
+      })
       .addCase(deleteComment.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
