@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/router";
-import { useDispatch, useSelector } from "react-redux";
+import { clientServer, BASE_URL } from "@/config";
 import { logoutUser } from "@/config/redux/action/authAction";
 
 const NavbarComponent = ({ token }) => {
@@ -9,17 +10,42 @@ const NavbarComponent = ({ token }) => {
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [me, setMe] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    // On hard refresh, Redux is empty; hydrate from cookie token
+    (async () => {
+      try {
+        if (!token) return;
+        if (authState?.user?.userId?._id) return; // already in Redux
+        const res = await clientServer.get(
+          "/user/public_profile/me",
+          { withCredentials: true }
+        );
+        if (!ignore) setMe(res.data?.user || null);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [token, authState?.user?.userId?._id]);
 
   const isLoggedIn =
     Boolean(token) ||
     Boolean(authState.isTokenThere) ||
-    Boolean(authState.user?.userId?._id);
+    Boolean(authState.user?.userId?._id) ||
+    Boolean(me?._id);
+
+  const displayUser = authState.user?.userId || me;
 
   const handleLogout = () => {
     dispatch(logoutUser());
     router.push("/");
   };
-  console.log("Token in NavbarPage:", token);
+  // console.log("Token in NavbarPage:", token);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -46,7 +72,12 @@ const NavbarComponent = ({ token }) => {
       <div className="flex items-center gap-4 text-gray-500">
         {isLoggedIn ? (
           <div className="flex items-center gap-2">
-            <p>Hey {authState.user?.userId?.name}</p>
+            <img
+              src={`${BASE_URL}/${displayUser?.profilePicture || "default.jpg"}`}
+              alt={displayUser?.username || "me"}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <p>Hey {displayUser?.name || displayUser?.username}</p>
             <div
               className="relative rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center"
               ref={dropdownRef}

@@ -39,7 +39,7 @@ export const getAboutUser=createAsyncThunk(
     async (_,thunkAPI)=>{
         try{
             const response=await clientServer.get(`/get_user_and_profile`)
-            console.log("User data fetched successfully:", response.data);
+            // console.log("User data fetched successfully:", response.data);
             return thunkAPI.fulfillWithValue(response.data)
         }catch(err){
             return thunkAPI.rejectWithValue(err.response.data)

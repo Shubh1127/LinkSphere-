@@ -35,7 +35,7 @@ const Dashboard = ({ token }) => {
   const authState = useSelector((state) => state.auth);
   const postState = useSelector((state) => state.posts);
   const [isTokenThere, setTokenIsThere] = React.useState(false);
-  console.log("Auth State:", authState);
+  // console.log("Auth State:", authState);
   const dispatch = useDispatch();
   const router = useRouter();
   // const handleLogout = () => {
@@ -49,7 +49,7 @@ const Dashboard = ({ token }) => {
     }
   }, [token]);
 
-  console.log("postState.....", postState);
+  // console.log("postState.....", postState);
 
   const [postContent, setPostContent] = useState("");
   const [fileContent, setFileContent] = useState();
@@ -85,7 +85,7 @@ const Dashboard = ({ token }) => {
 
   useEffect(() => {
     if (authState.isTokenThere) {
-      console.log("Token received in dashboard:", token);
+      // console.log("Token received in dashboard:", token);
       dispatch(getAllPosts());
       dispatch(getAboutUser());
       // dispatch(getAllComments({ postId: post._id }));

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { BASE_URL } from "@/config";
+import { BASE_URL, clientServer } from "@/config";
 
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token || null;
@@ -24,60 +24,33 @@ export default function Discover({ token }) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const boxRef = useRef(null);
   const debounceRef = useRef(null);
-
-  // Fetch users for local filtering
-  useEffect(() => {
-    if (!authState.all_profiles_fetched) {
-      dispatch(getAllUsers());
-    }
-  }, [authState.all_profiles_fetched, dispatch]);
-
-  // Close on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (boxRef.current && !boxRef.current.contains(e.target)) {
-        setOpen(false);
-        setActiveIndex(-1);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // Debounced client-side filter
+  // console.log(suggestions)
+  // Remove local filtering useEffect and call backend with debounce instead
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const list =
-        authState?.allUsers ||
-        authState?.users ||
-        authState?.profiles ||
-        [];
-      const q = query.trim().toLowerCase();
-      if (!q) {
+    const q = query.trim();
+    if (!q) {
+      setSuggestions([]);
+      setOpen(false);
+      setActiveIndex(-1);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await clientServer.get("/user/search", { params: { q } });
+        const list = res.data?.users || [];
+        setSuggestions(list);
+        setOpen(list.length > 0);
+        setActiveIndex(list.length ? 0 : -1);
+      } catch (e) {
         setSuggestions([]);
         setOpen(false);
         setActiveIndex(-1);
-        return;
+        // optional: console.error(e);
       }
-      const filtered = list
-        .filter((u) => {
-          const name = u?.name || "";
-          const username = u?.username || "";
-          const email = u?.email || "";
-          return (
-            name.toLowerCase().includes(q) ||
-            username.toLowerCase().includes(q) ||
-            email.toLowerCase().includes(q)
-          );
-        })
-        .slice(0, 8); // show top 8
-      setSuggestions(filtered);
-      setOpen(true);
-      setActiveIndex(filtered.length ? 0 : -1);
-    }, 200);
+    }, 250);
     return () => clearTimeout(debounceRef.current);
-  }, [query, authState?.allUsers, authState?.users, authState?.profiles]);
+  }, [query]);
 
   const goToProfile = (user) => {
     if (!user) return;

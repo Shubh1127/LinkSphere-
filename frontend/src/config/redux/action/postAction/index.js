@@ -7,7 +7,7 @@ export const getAllPosts=createAsyncThunk(
         try{
             const response=await clientServer.get("/posts")
             console.log("Is browser:", typeof window !== "undefined");
-            console.log("Posts fetched successfully:", response.data);
+            // console.log("Posts fetched successfully:", response.data);
             return thunkAPI.fulfillWithValue(response.data)
         }catch(error){
             return thunkAPI.rejectWithValue(error.response.data)

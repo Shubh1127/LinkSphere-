@@ -1,12 +1,13 @@
 import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
+import { getAllUserProfile } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
-import { useEffect } from "react"; 
-// import Link from "next/link";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 export default function DashboardLayout({ children, token }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const { topProfiles } = useSelector((s) => s.auth || {});
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -14,6 +15,12 @@ export default function DashboardLayout({ children, token }) {
     if (!token) router.push("/");
     else dispatch(setTokenIsThere());
   }, [token, router.isReady, dispatch]);
+
+  useEffect(() => {
+    if (!topProfiles || topProfiles.length === 0) {
+      dispatch(getAllUserProfile()); // make sure this action exists in your project
+    }
+  }, [dispatch, topProfiles]);
 
   return (
     <div className=" flex  w-full mt-5 gap-2">
@@ -86,32 +93,39 @@ export default function DashboardLayout({ children, token }) {
         <h1 className="font-semibold mb-2 ms-2">Top Profiles</h1>
         {authState.all_profiles_fetched &&
           authState.all_users
-          .filter(profile=>profile.userId?._id !==authState?.user?.userId?._id)
-          .map((profile) => {
-            return (
-              <div>
-                <div onClick={() => router.push(`/u/${profile.userId?.username}`)} className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out">
-                  {profile.userId?.profilePicture ? (
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                      alt="Default Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <img
-                      src={profile.userId?.profilePicture}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                  )}
-                  <p>{profile.userId.name}</p>
-                  <p className="text-sm text-gray-500">
-                    @{profile.userId?.username}
-                  </p>
+            .filter(
+              (profile) => profile.userId?._id !== authState?.user?.userId?._id
+            )
+            .map((profile) => {
+              return (
+                <div key={profile.userId?._id}>
+                  <div
+                    onClick={() =>
+                      router.push(`/u/${profile.userId?.username}`)
+                    }
+                    className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out"
+                  >
+                    {profile.userId?.profilePicture ? (
+                      <img
+                        src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                        alt="Default Profile"
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <img
+                        src={profile.userId?.profilePicture}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <p>{profile.userId.name}</p>
+                    <p className="text-sm text-gray-500">
+                      @{profile.userId?.username}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
       </div>
     </div>
   );

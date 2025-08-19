@@ -329,6 +329,28 @@ export const getPublicProfile = async (req, res) => {
   }
 };
 
+// Escape regex special chars
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const searchUsers = async (req, res) => {
+  try {
+    const q = (req.query.q || "").trim();
+    if (!q) return res.status(200).json({ users: [] });
+
+    const rx = new RegExp(escapeRegex(q), "i");
+    const users = await User.find(
+      { $or: [{ username: rx }, { name: rx }, { email: rx }] },
+      "name username email profilePicture"
+    )
+      .limit(10)
+      .lean();
+
+    return res.status(200).json({ users });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 // export const commentPost=async(req,res)=>{
 //     try{
 //         const {token,post_id,commentBody}=req.body;
