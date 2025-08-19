@@ -235,30 +235,29 @@ export const downloadProfile = async (req, res) => {
 };
 
 export const sendConnectionRequest = async (req, res) => {
-  const { token, connectionId } = req.body;
   try {
-    const user = await User.findOne({ token: token });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const connectionUser = await User.findOne({ _id: connectionId });
-    if (!connectionUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const exisitngConnection = await ConnectionRequest.findOne({
+    const token = req.cookies?.token || req.body?.token;
+    const { connectionId } = req.body;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+    if (!connectionId) return res.status(400).json({ message: "connectionId is required" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const connectionUser = await User.findById(connectionId);
+    if (!connectionUser) return res.status(404).json({ message: "User not found" });
+
+    const existing = await ConnectionRequest.findOne({
       userId: user._id,
       connectionId: connectionUser._id,
     });
-    if (exisitngConnection) {
+    if (existing) {
       return res.status(400).json({ message: "Connection request already sent" });
     }
 
-    const request = new sendConnectionRequest({
-      userId: user._id,
-      connectionId: connectionUser._id,
-    });
+    const request = new ConnectionRequest({ userId: user._id, connectionId: connectionUser._id });
     await request.save();
-    return res.status(200).json({ message: "Connection request sent" });
+    return res.status(200).json({ message: "Connection request sent", request });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -266,15 +265,18 @@ export const sendConnectionRequest = async (req, res) => {
 
 export const getMyConnectionRequests = async (req, res) => {
   try {
-    const { token } = req.body;
-    const user = await User.findOne({ token });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const connection = await sendConnectionRequest.find({ connectionId: user._id })
-      .populate("userId", "name email username profilePicture");
+    const token = req.cookies?.token || req.body?.token;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
 
-    return res.json({ connection });
+    const me = await User.findOne({ token });
+    if (!me) return res.status(404).json({ message: "User not found" });
+
+    // Incoming requests (others -> me)
+    const requests = await ConnectionRequest.find({ connectionId: me._id })
+      .populate("userId", "name email username profilePicture")
+      .lean();
+
+    return res.json({ requests });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -282,13 +284,21 @@ export const getMyConnectionRequests = async (req, res) => {
 
 export const whatAreMyConnections = async (req, res) => {
   try {
-    const { token } = req.body;
-    const user = await User.findOne({ token });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const connections = await ConnectionRequest.find({ connectionId: user._id })
-      .populate("userId", "name email username profilePicture");
+    const token = req.cookies?.token || req.body?.token;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+
+    const me = await User.findOne({ token });
+    if (!me) return res.status(404).json({ message: "User not found" });
+
+    // Accepted connections where I am either side
+    const connections = await ConnectionRequest.find({
+      status_accepted: true,
+      $or: [{ userId: me._id }, { connectionId: me._id }],
+    })
+      .populate("userId", "name email username profilePicture")
+      .populate("connectionId", "name email username profilePicture")
+      .lean();
+
     return res.json({ connections });
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -297,18 +307,25 @@ export const whatAreMyConnections = async (req, res) => {
 
 export const acceptConnectionRequest = async (req, res) => {
   try {
-    const { token, requestId, action_type } = req.body;
-    const user = await User.findOne({ token });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const token = req.cookies?.token || req.body?.token;
+    const { requestId, action_type } = req.body;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+    if (!requestId || !action_type) return res.status(400).json({ message: "requestId and action_type are required" });
+
+    const me = await User.findOne({ token });
+    if (!me) return res.status(404).json({ message: "User not found" });
+
+    const request = await ConnectionRequest.findById(requestId);
+    if (!request) return res.status(404).json({ message: "Connection request not found" });
+
+    if (String(request.connectionId) !== String(me._id)) {
+      return res.status(403).json({ message: "Not allowed" });
     }
-    const connection = await ConnectionRequest.findOne({ _id: requestId });
-    if (!connection) {
-      return res.status(404).json({ message: "Connection request not found" });
-    }
-    action_type === "accept" ? (connection.status_accepted = true) : (connection.status_accepted = false);
-    await connection.save();
-    return res.json({ message: "Connection request updated" });
+
+    request.status_accepted = action_type === "accept";
+    await request.save();
+
+    return res.json({ message: "Connection request updated", request });
   } catch (err) {
     return res.json({ message: err.message });
   }
@@ -424,3 +441,19 @@ export const searchUsers = async (req, res) => {
 //         return res.status(500).json({message:err.message})
 //     }
 // }
+
+export const AboutMe=async(req,res)=>{
+  try{
+    const token=req.cookies.token;
+    if(!token){
+      return res.status(401).json({message:"User not logged in"})
+    }
+    const user=await User.findOne({token:token});
+    if(!user){
+      return res.status(404).json({message:"User not found"})
+    }
+    return res.status(200).json({user})
+  }catch(err){
+    return res.status(500).json({message:err.message})
+  }
+}

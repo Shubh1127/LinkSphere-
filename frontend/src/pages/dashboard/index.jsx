@@ -443,7 +443,7 @@ const Dashboard = ({ token }) => {
                                   <p>{comment.body}</p>
                                 </div>
                                 {comment.userId._id ===
-                                  authState.user.userId._id && (
+                                  authState?.user?.userId?._id && (
                                   <div>
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"

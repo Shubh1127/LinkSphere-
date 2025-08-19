@@ -3,6 +3,13 @@ import { useRouter } from "next/router";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { clientServer, BASE_URL } from "@/config";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  sendConnectionRequest,
+  getMyConnectionRequests,
+  getMyConnections,
+  acceptConnectionRequest as acceptConn,
+} from "@/config/redux/action/authAction";
 
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token || null;
@@ -33,6 +40,10 @@ export default function PublicProfile({ token }) {
   const [info, setInfo] = useState(null); // { user, profile }
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { connectionRequest, connections, connectionUpdating } = useSelector((s) => s.auth || {});
+  const [requested, setRequested] = useState(false); // optimistic outgoing flag
+  const myId = null; // optional if you need it from auth
 
   useEffect(() => {
     if (!username) return;
@@ -51,6 +62,12 @@ export default function PublicProfile({ token }) {
       }
     })();
   }, [username]);
+
+  useEffect(() => {
+    // load incoming requests and accepted connections so we can show buttons
+    dispatch(getMyConnectionRequests());
+    dispatch(getMyConnections());
+  }, [dispatch]);
 
   const pastWork = useMemo(() => info?.profile?.pastWork || [], [info]);
   const education = useMemo(() => info?.profile?.education || [], [info]);
@@ -78,6 +95,16 @@ export default function PublicProfile({ token }) {
   const u = info.user;
   const p = info.profile || {};
 
+  // Helpers to determine relation with this profile user
+  const incomingFromThisUser = connectionRequest?.find?.(
+    (r) => String(r.userId?._id) === String(info?.user?._id)
+  );
+  const connectedWithThisUser = connections?.some?.((r) => {
+    const a = r.userId?._id, b = r.connectionId?._id;
+    const uid = String(info?.user?._id);
+    return String(a) === uid || String(b) === uid;
+  });
+
   return (
     <UserLayout token={token}>
       <DashboardLayout token={token}>
@@ -94,27 +121,70 @@ export default function PublicProfile({ token }) {
                 />
                 <div className="flex  flex-1">
                   <div className="flex-1">
-                  <h1 className="text-2xl font-bold">
-                    {u.name || `@${u.username}`}
-                  </h1>
-                  <p className="text-gray-600">@{u.username}</p>
-                  {u.email && (
-                    <p className="text-gray-500 text-sm">{u.email}</p>
-                  )}
-                  {p.currentPost && (
-                    <p className="mt-1 text-[15px]">{p.currentPost}</p>
-                  )}
-                  {p.bio && (
-                    <p className="mt-2 text-[15px] text-gray-700">{p.bio}</p>
-                  )}
+                    <h1 className="text-2xl font-bold">
+                      {u.name || `@${u.username}`}
+                    </h1>
+                    <p className="text-gray-600">@{u.username}</p>
+                    {u.email && (
+                      <p className="text-gray-500 text-sm">{u.email}</p>
+                    )}
+                    {p.currentPost && (
+                      <p className="mt-1 text-[15px]">{p.currentPost}</p>
+                    )}
+                    {p.bio && (
+                      <p className="mt-2 text-[15px] text-gray-700">{p.bio}</p>
+                    )}
                   </div>
-                  <div className="flex gap-2 mt-12   items-end ms-12 ">
-                    <button className="h-max px-2 py-2 rounded-full border text-sm hover:bg-gray-50 cursor-pointer">
-                      Message
-                    </button>
-                    <button className="h-max px-2 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer">
-                      Connect
-                    </button>
+                  <div className="flex gap-2 mt-12 items-end ms-12 ">
+                    {connectedWithThisUser ? (
+                      <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
+                        Connected
+                      </button>
+                    ) : incomingFromThisUser ? (
+                      <>
+                        <button
+                          className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
+                          disabled={connectionUpdating}
+                          onClick={() =>
+                            dispatch(
+                              acceptConn({ requestId: incomingFromThisUser._id, action_type: "accept" })
+                            ).then(() => {
+                              dispatch(getMyConnections());
+                            })
+                          }
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="h-max px-3 py-2 rounded-full border text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
+                          disabled={connectionUpdating}
+                          onClick={() =>
+                            dispatch(
+                              acceptConn({ requestId: incomingFromThisUser._id, action_type: "reject" })
+                            )
+                          }
+                        >
+                          Ignore
+                        </button>
+                      </>
+                    ) : requested ? (
+                      <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
+                        Requested
+                      </button>
+                    ) : (
+                      <button
+                        className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
+                        disabled={connectionUpdating}
+                        onClick={() =>
+                          dispatch(sendConnectionRequest({ connectionId: u._id }))
+                            .unwrap()
+                            .then(() => setRequested(true))
+                            .catch(() => setRequested(false))
+                        }
+                      >
+                        Connect
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import {Router} from 'express'
 import multer from 'multer'
 
-import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData,getAllUserProfile, downloadProfile, sendConnectionRequest, getMyConnectionRequests, whatAreMyConnections, acceptConnectionRequest, logoutUser, getPublicProfile, searchUsers } from '../controllers/user.controllers.js';
+import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData,getAllUserProfile, downloadProfile, sendConnectionRequest, getMyConnectionRequests, whatAreMyConnections, acceptConnectionRequest, logoutUser, getPublicProfile, searchUsers, AboutMe } from '../controllers/user.controllers.js';
 
 const router=Router();
 const storage = multer.diskStorage({
@@ -34,6 +34,9 @@ router
 router
 .route("/user_update")
 .post(updateUserProfile)
+
+router.route("/user/public_profile/me")
+.get(AboutMe)
 
 router.route('/get_user_and_profile')
 .get(getUserAndProfile)

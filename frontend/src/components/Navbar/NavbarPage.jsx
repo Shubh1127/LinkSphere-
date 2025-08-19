@@ -11,33 +11,33 @@ const NavbarComponent = ({ token }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [me, setMe] = useState(null);
+  const [meLoading, setMeLoading] = useState(false);
 
   useEffect(() => {
     let ignore = false;
-    // On hard refresh, Redux is empty; hydrate from cookie token
+    // Hydrate from cookie on refresh (don’t depend on token prop)
     (async () => {
       try {
-        if (!token) return;
         if (authState?.user?.userId?._id) return; // already in Redux
-        const res = await clientServer.get(
-          "/user/public_profile/me",
-          { withCredentials: true }
-        );
+        setMeLoading(true);
+        const res = await clientServer.get("/user/public_profile/me", {
+          withCredentials: true,
+        });
+        console.log("Fetched user data:", res.data);  
         if (!ignore) setMe(res.data?.user || null);
       } catch {
-        // ignore
+        if (!ignore) setMe(null);
+      } finally {
+        if (!ignore) setMeLoading(false);
       }
     })();
     return () => {
       ignore = true;
     };
-  }, [token, authState?.user?.userId?._id]);
+  }, [authState?.user?.userId?._id]);
 
   const isLoggedIn =
-    Boolean(token) ||
-    Boolean(authState.isTokenThere) ||
-    Boolean(authState.user?.userId?._id) ||
-    Boolean(me?._id);
+    Boolean(authState.user?.userId?._id) || Boolean(me?._id);
 
   const displayUser = authState.user?.userId || me;
 
@@ -45,7 +45,7 @@ const NavbarComponent = ({ token }) => {
     dispatch(logoutUser());
     router.push("/");
   };
-  // console.log("Token in NavbarPage:", token);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -72,31 +72,23 @@ const NavbarComponent = ({ token }) => {
       <div className="flex items-center gap-4 text-gray-500">
         {isLoggedIn ? (
           <div className="flex items-center gap-2">
-            <img
+            {/* <img
               src={`${BASE_URL}/${displayUser?.profilePicture || "default.jpg"}`}
               alt={displayUser?.username || "me"}
               className="w-8 h-8 rounded-full object-cover"
-            />
+            /> */}
             <p>Hey {displayUser?.name || displayUser?.username}</p>
+
             <div
               className="relative rounded-full w-8 h-8 bg-gray-200 flex items-center justify-center"
               ref={dropdownRef}
             >
-              {!authState.userId?.profilePicture ? (
-                <img
-                  onClick={() => setIsOpen(!isOpen)}
-                  src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                  alt="Default Profile"
-                  className="w-8 h-8 rounded-full cursor-pointer"
-                />
-              ) : (
-                <img
-                  onClick={() => setIsOpen(!isOpen)}
-                  src={authState.userId?.profilePicture}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full cursor-pointer"
-                />
-              )}
+              <img
+                onClick={() => setIsOpen(!isOpen)}
+                src={`${BASE_URL}/${displayUser?.profilePicture || "default.jpg"}`}
+                alt="Profile"
+                className="w-8 h-8 rounded-full cursor-pointer object-cover"
+              />
               {isOpen && (
                 <div className="absolute top-10 right-0 w-max p-1 bg-white border rounded-md shadow-lg">
                   <div className="flex gap-1 scale-100 hover:scale-110 hover:p-[0.1rem] transition-transform ease-in-out cursor-pointer">
@@ -124,18 +116,10 @@ const NavbarComponent = ({ token }) => {
                   </div>
                 </div>
               )}
-              {/* {authState.user?.userId?.profilePicture} */}
             </div>
-
-            {/* <button
-            className="me-2 border rounded-xl p-1 px-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => {
-              handleLogout();
-            }}
-          >
-            Logout
-          </button> */}
           </div>
+        ) : meLoading ? (
+          <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
         ) : (
           <div className="flex items-center gap-2">
             <p

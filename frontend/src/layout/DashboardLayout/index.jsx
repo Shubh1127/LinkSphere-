@@ -1,5 +1,5 @@
 import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
-import { getAllUserProfile } from "@/config/redux/action/authAction";
+import { getAllUsers } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,7 +18,7 @@ export default function DashboardLayout({ children, token }) {
 
   useEffect(() => {
     if (!topProfiles || topProfiles.length === 0) {
-      dispatch(getAllUserProfile()); // make sure this action exists in your project
+      dispatch(getAllUsers()); // make sure this action exists in your project
     }
   }, [dispatch, topProfiles]);
 
