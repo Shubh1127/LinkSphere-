@@ -237,28 +237,64 @@ export const downloadProfile = async (req, res) => {
 export const sendConnectionRequest = async (req, res) => {
   try {
     const token = req.cookies?.token || req.body?.token;
-    const { connectionId } = req.body;
+    // backward-compatible body keys: receiverId | connectionId | senderId(from your previous attempt)
+    const targetId =
+      req.body?.receiverId || req.body?.connectionId || req.body?.senderId;
+
     if (!token) return res.status(401).json({ message: "User not logged in" });
-    if (!connectionId) return res.status(400).json({ message: "connectionId is required" });
+    if (!targetId) return res.status(400).json({ message: "receiverId is required" });
 
-    const user = await User.findOne({ token });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const me = await User.findOne({ token });
+    if (!me) return res.status(404).json({ message: "User not found" });
 
-    const connectionUser = await User.findById(connectionId);
-    if (!connectionUser) return res.status(404).json({ message: "User not found" });
-
-    const existing = await ConnectionRequest.findOne({
-      userId: user._id,
-      connectionId: connectionUser._id,
-    });
-    if (existing) {
-      return res.status(400).json({ message: "Connection request already sent" });
+    if (String(me._id) === String(targetId)) {
+      return res.status(400).json({ message: "You cannot connect with yourself" });
     }
 
-    const request = new ConnectionRequest({ userId: user._id, connectionId: connectionUser._id });
-    await request.save();
-    return res.status(200).json({ message: "Connection request sent", request });
+    const target = await User.findById(targetId);
+    if (!target) return res.status(404).json({ message: "Target user not found" });
+
+    // Already connected?
+    const accepted = await ConnectionRequest.findOne({
+      status_accepted: true,
+      $or: [
+        { senderId: me._id, receiverId: target._id },
+        { senderId: target._id, receiverId: me._id },
+      ],
+    });
+    if (accepted) {
+      return res.status(400).json({ message: "Already connected" });
+    }
+
+    // Pending in either direction?
+    const pending = await ConnectionRequest.findOne({
+      status_accepted: null,
+      $or: [
+        { senderId: me._id, receiverId: target._id },
+        { senderId: target._id, receiverId: me._id },
+      ],
+    });
+    if (pending) {
+      return res.status(400).json({ message: "Connection request already pending" });
+    }
+
+    // Create outgoing request (me -> target)
+    const request = await ConnectionRequest.create({
+      senderId: me._id,
+      receiverId: target._id,
+      status_accepted: null,
+    });
+
+    const populated = await ConnectionRequest.findById(request._id)
+      .populate("senderId", "name email username profilePicture")
+      .populate("receiverId", "name email username profilePicture");
+
+    return res.status(200).json({ message: "Connection request sent", request: populated });
   } catch (err) {
+    // handle duplicate key error from unique index gracefully
+    if (err?.code === 11000) {
+      return res.status(400).json({ message: "Connection request already pending" });
+    }
     return res.status(500).json({ message: err.message });
   }
 };
@@ -271,9 +307,12 @@ export const getMyConnectionRequests = async (req, res) => {
     const me = await User.findOne({ token });
     if (!me) return res.status(404).json({ message: "User not found" });
 
-    // Incoming requests (others -> me)
-    const requests = await ConnectionRequest.find({ connectionId: me._id })
-      .populate("userId", "name email username profilePicture")
+    // Incoming pending requests (others -> me)
+    const requests = await ConnectionRequest.find({
+      receiverId: me._id,
+      status_accepted: null,
+    })
+      .populate("senderId", "name email username profilePicture")
       .lean();
 
     return res.json({ requests });
@@ -293,10 +332,10 @@ export const whatAreMyConnections = async (req, res) => {
     // Accepted connections where I am either side
     const connections = await ConnectionRequest.find({
       status_accepted: true,
-      $or: [{ userId: me._id }, { connectionId: me._id }],
+      $or: [{ senderId: me._id }, { receiverId: me._id }],
     })
-      .populate("userId", "name email username profilePicture")
-      .populate("connectionId", "name email username profilePicture")
+      .populate("senderId", "name email username profilePicture")
+      .populate("receiverId", "name email username profilePicture")
       .lean();
 
     return res.json({ connections });
@@ -310,7 +349,8 @@ export const acceptConnectionRequest = async (req, res) => {
     const token = req.cookies?.token || req.body?.token;
     const { requestId, action_type } = req.body;
     if (!token) return res.status(401).json({ message: "User not logged in" });
-    if (!requestId || !action_type) return res.status(400).json({ message: "requestId and action_type are required" });
+    if (!requestId || !action_type)
+      return res.status(400).json({ message: "requestId and action_type are required" });
 
     const me = await User.findOne({ token });
     if (!me) return res.status(404).json({ message: "User not found" });
@@ -318,16 +358,43 @@ export const acceptConnectionRequest = async (req, res) => {
     const request = await ConnectionRequest.findById(requestId);
     if (!request) return res.status(404).json({ message: "Connection request not found" });
 
-    if (String(request.connectionId) !== String(me._id)) {
+    // Only the receiver can accept/reject
+    if (String(request.receiverId) !== String(me._id)) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
     request.status_accepted = action_type === "accept";
     await request.save();
 
-    return res.json({ message: "Connection request updated", request });
+    const populated = await ConnectionRequest.findById(request._id)
+      .populate("senderId", "name email username profilePicture")
+      .populate("receiverId", "name email username profilePicture");
+
+    return res.json({ message: "Connection request updated", request: populated });
   } catch (err) {
-    return res.json({ message: err.message });
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// Optional: outgoing (sent-by-me) pending requests
+export const getMySentConnectionRequests = async (req, res) => {
+  try {
+    const token = req.cookies?.token || req.body?.token;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+
+    const me = await User.findOne({ token });
+    if (!me) return res.status(404).json({ message: "User not found" });
+
+    const requests = await ConnectionRequest.find({
+      senderId: me._id,
+      status_accepted: null,
+    })
+      .populate("receiverId", "name email username profilePicture")
+      .lean();
+
+    return res.json({ requests });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
