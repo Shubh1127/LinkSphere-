@@ -74,10 +74,11 @@ export const getAllUsers=createAsyncThunk(
 
 export const sendConnectionRequest = createAsyncThunk(
   "auth/sendConnectionRequest",
-  async ({ connectionId }, thunkAPI) => {
+  async (payload, thunkAPI) => {
     try {
-      const res = await clientServer.post("/user/send_connection_request", { connectionId }, { withCredentials: true });
-      return thunkAPI.fulfillWithValue(res.data); // { message, request }
+      // payload can be { receiverId } or { connectionId }
+      const res = await clientServer.post("/user/send_connection_request", payload, { withCredentials: true });
+      return thunkAPI.fulfillWithValue(res.data);
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to send request" });
     }
@@ -89,7 +90,7 @@ export const getMyConnectionRequests = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await clientServer.post("/user/get_connection_request", {}, { withCredentials: true });
-      return thunkAPI.fulfillWithValue(res.data); // { requests: [] }
+      return thunkAPI.fulfillWithValue(res.data); // { requests: [] } incoming (senderId populated)
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to fetch requests" });
     }
@@ -101,7 +102,7 @@ export const getMyConnections = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await clientServer.post("/user/user_connection_request", {}, { withCredentials: true });
-      return thunkAPI.fulfillWithValue(res.data); // { connections: [] }
+      return thunkAPI.fulfillWithValue(res.data); // { connections: [] } accepted (senderId, receiverId populated)
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to fetch connections" });
     }
@@ -120,6 +121,18 @@ export const acceptConnectionRequest = createAsyncThunk(
       return thunkAPI.fulfillWithValue(res.data); // { message, request }
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to update request" });
+    }
+  }
+);
+
+export const getMySentConnectionRequests = createAsyncThunk(
+  "auth/getMySentConnectionRequests",
+  async (_, thunkAPI) => {
+    try {
+      const res = await clientServer.get("/user/my_sent_requests", { withCredentials: true });
+      return thunkAPI.fulfillWithValue(res.data); // { requests: [] } outgoing (receiverId populated)
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data || { message: "Failed to fetch sent requests" });
     }
   }
 );

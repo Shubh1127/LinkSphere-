@@ -9,6 +9,7 @@ import {
   getMyConnectionRequests,
   getMyConnections,
   acceptConnectionRequest,
+  getMySentConnectionRequests, // NEW
 } from "../../action/authAction/index";
 
 const initialState = {
@@ -20,8 +21,8 @@ const initialState = {
   loggedIn: false,
   isTokenThere: false,
   connections: [],
-  connectionRequest: [],
-  // optional helper flags
+  connectionRequest: [],     // incoming pending (senderId populated)
+  outgoingRequests: [],      // NEW: my pending sent (receiverId populated)
   connectionUpdating: false,
   all_profiles_fetched: false,
 };
@@ -146,10 +147,12 @@ const authSlice = createSlice({
         state.connectionUpdating = false;
         state.isError = false;
         state.message = action.payload?.message || "Request sent";
-        // Optional: keep track of my outgoing requests locally
-        if (!state.outgoingRequests) state.outgoingRequests = [];
-        if (action.payload?.request)
-          state.outgoingRequests.push(action.payload.request);
+        const req = action.payload?.request;
+        if (req) {
+          if (!Array.isArray(state.outgoingRequests)) state.outgoingRequests = [];
+          const exists = state.outgoingRequests.some(r => String(r._id) === String(req._id));
+          if (!exists) state.outgoingRequests.push(req);
+        }
       })
       .addCase(sendConnectionRequest.rejected, (state, action) => {
         state.connectionUpdating = false;
@@ -198,21 +201,29 @@ const authSlice = createSlice({
         state.message = action.payload?.message || "Request updated";
         const updated = action.payload?.request;
         if (updated) {
-          // remove from incoming list
-          state.connectionRequest = state.connectionRequest.filter(
-            (r) => r._id !== updated._id
-          );
-          // if accepted, push into connections
+          state.connectionRequest = state.connectionRequest.filter(r => r._id !== updated._id);
           if (updated.status_accepted) {
             if (!Array.isArray(state.connections)) state.connections = [];
             state.connections.push(updated);
           }
+          // if this was in my outgoing (edge-case), remove it there too
+          state.outgoingRequests = (state.outgoingRequests || []).filter(r => r._id !== updated._id);
         }
       })
       .addCase(acceptConnectionRequest.rejected, (state, action) => {
         state.connectionUpdating = false;
         state.isError = true;
         state.message = action.payload?.message || "Failed to update request";
+      })
+      .addCase(getMySentConnectionRequests.pending, (state) => {
+        state.message = "Loading sent requests...";
+      })
+      .addCase(getMySentConnectionRequests.fulfilled, (state, action) => {
+        state.outgoingRequests = action.payload?.requests || [];
+      })
+      .addCase(getMySentConnectionRequests.rejected, (state, action) => {
+        state.outgoingRequests = [];
+        state.message = action.payload?.message || "Failed to load sent requests";
       });
   },
 });

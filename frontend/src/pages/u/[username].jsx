@@ -9,6 +9,7 @@ import {
   getMyConnectionRequests,
   getMyConnections,
   acceptConnectionRequest as acceptConn,
+  getMySentConnectionRequests, // NEW
 } from "@/config/redux/action/authAction";
 
 export async function getServerSideProps({ req }) {
@@ -41,7 +42,7 @@ export default function PublicProfile({ token }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  const { connectionRequest, connections, connectionUpdating } = useSelector((s) => s.auth || {});
+  const { connectionRequest, connections, outgoingRequests, connectionUpdating } = useSelector((s) => s.auth || {});
   const [requested, setRequested] = useState(false); // optimistic outgoing flag
   const myId = null; // optional if you need it from auth
 
@@ -67,6 +68,7 @@ export default function PublicProfile({ token }) {
     // load incoming requests and accepted connections so we can show buttons
     dispatch(getMyConnectionRequests());
     dispatch(getMyConnections());
+    dispatch(getMySentConnectionRequests()); // NEW: load outgoing on mount/refresh
   }, [dispatch]);
 
   const pastWork = useMemo(() => info?.profile?.pastWork || [], [info]);
@@ -96,14 +98,18 @@ export default function PublicProfile({ token }) {
   const p = info.profile || {};
 
   // Helpers to determine relation with this profile user
+  const profileUserId = String(info?.user?._id || "");
   const incomingFromThisUser = connectionRequest?.find?.(
-    (r) => String(r.userId?._id) === String(info?.user?._id)
+    (r) => String(r.senderId?._id) === profileUserId
   );
   const connectedWithThisUser = connections?.some?.((r) => {
-    const a = r.userId?._id, b = r.connectionId?._id;
-    const uid = String(info?.user?._id);
-    return String(a) === uid || String(b) === uid;
+    const a = String(r.senderId?._id);
+    const b = String(r.receiverId?._id);
+    return a === profileUserId || b === profileUserId;
   });
+  const outgoingToThisUser = outgoingRequests?.find?.(
+    (r) => String(r.receiverId?._id || r.receiverId) === profileUserId && (r.status_accepted === null || r.status_accepted === false)
+  );
 
   return (
     <UserLayout token={token}>
@@ -146,11 +152,8 @@ export default function PublicProfile({ token }) {
                           className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
                           disabled={connectionUpdating}
                           onClick={() =>
-                            dispatch(
-                              acceptConn({ requestId: incomingFromThisUser._id, action_type: "accept" })
-                            ).then(() => {
-                              dispatch(getMyConnections());
-                            })
+                            dispatch(acceptConn({ requestId: incomingFromThisUser._id, action_type: "accept" }))
+                              .then(() => dispatch(getMyConnections()))
                           }
                         >
                           Accept
@@ -159,15 +162,14 @@ export default function PublicProfile({ token }) {
                           className="h-max px-3 py-2 rounded-full border text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
                           disabled={connectionUpdating}
                           onClick={() =>
-                            dispatch(
-                              acceptConn({ requestId: incomingFromThisUser._id, action_type: "reject" })
-                            )
+                            dispatch(acceptConn({ requestId: incomingFromThisUser._id, action_type: "reject" }))
+                              .then(() => dispatch(getMyConnectionRequests()))
                           }
                         >
                           Ignore
                         </button>
                       </>
-                    ) : requested ? (
+                    ) : outgoingToThisUser ? (
                       <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
                         Requested
                       </button>
@@ -176,10 +178,9 @@ export default function PublicProfile({ token }) {
                         className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
                         disabled={connectionUpdating}
                         onClick={() =>
-                          dispatch(sendConnectionRequest({ connectionId: u._id }))
+                          dispatch(sendConnectionRequest({ receiverId: u._id }))
                             .unwrap()
-                            .then(() => setRequested(true))
-                            .catch(() => setRequested(false))
+                            .then(() => dispatch(getMySentConnectionRequests()))
                         }
                       >
                         Connect
