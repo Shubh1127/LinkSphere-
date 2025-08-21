@@ -1,7 +1,7 @@
 import {Router} from 'express'
 import multer from 'multer'
 
-import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData,getAllUserProfile, downloadProfile, sendConnectionRequest, getMyConnectionRequests, whatAreMyConnections, acceptConnectionRequest, logoutUser, getPublicProfile, searchUsers, AboutMe } from '../controllers/user.controllers.js';
+import { login, register,uploadProfilePicture,updateUserProfile,getUserAndProfile, updatePofileData,getAllUserProfile, downloadProfile, sendConnectionRequest, getMyConnectionRequests, whatAreMyConnections, acceptConnectionRequest, logoutUser, getPublicProfile, searchUsers, AboutMe, getMySentConnectionRequests, updatePassword, updateBasicProfile, addWorkHistory, addEducation } from '../controllers/user.controllers.js';
 
 const router=Router();
 const storage = multer.diskStorage({
@@ -55,5 +55,10 @@ router.route("/user/user_connection_request").post(whatAreMyConnections)
 router.route("/user/accept_connection_request").post(acceptConnectionRequest)
 router.route("/user/public_profile/:username").get(getPublicProfile)
 router.route("/user/search").get(searchUsers) // NEW: search endpoint
+router.route("/user/my_sent_requests").get(getMySentConnectionRequests)
+router.post("/user/update_password", updatePassword);
+router.post("/user/update_basic_profile", updateBasicProfile);
+router.post("/user/add_work_history", addWorkHistory);
+router.post("/user/add_education", addEducation);
 export default router
 

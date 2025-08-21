@@ -63,7 +63,7 @@ export default function MyConnections({ token }) {
             ) : (
               <div className="space-y-3">
                 {pending.map((r) => {
-                  const u = r.userId;
+                  const u = r.senderId; // The user who sent the request
                   return (
                     <div
                       key={r._id}
@@ -119,8 +119,8 @@ export default function MyConnections({ token }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {connections.map((c) => {
                   // Show the "other" user in the connection
-                  const a = c.userId;
-                  const b = c.connectionId;
+                  const a = c.senderId;
+                  const b = c.receiverId;
                   const other =
                     meId && String(a?._id) === String(meId) ? b : a;
 
@@ -130,9 +130,7 @@ export default function MyConnections({ token }) {
                       className="flex items-center gap-3 border rounded-lg p-3"
                     >
                       <img
-                        src={`${BASE_URL}/${
-                          other?.profilePicture || "default.jpg"
-                        }`}
+                        src={`${BASE_URL}/${other?.profilePicture || "default.jpg"}`}
                         alt={other?.username}
                         className="w-10 h-10 rounded-full object-cover"
                       />

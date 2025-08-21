@@ -524,3 +524,90 @@ export const AboutMe=async(req,res)=>{
     return res.status(500).json({message:err.message})
   }
 }
+
+export const updatePassword = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    const { oldPassword, newPassword } = req.body;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+    if (!oldPassword || !newPassword) return res.status(400).json({ message: "Both passwords required" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Old password incorrect" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    return res.json({ message: "Password updated" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateBasicProfile = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    const { name, username, email, bio } = req.body;
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (name) user.name = name;
+    if (username) user.username = username;
+    if (email) user.email = email;
+    await user.save();
+
+    const profile = await Profile.findOne({ userId: user._id });
+    if (bio !== undefined) {
+      profile.bio = bio;
+      await profile.save();
+    }
+
+    return res.json({ message: "Profile updated", user, profile });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const addWorkHistory = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    const { work } = req.body; // work = { title, company, startDate, endDate, current, location, description }
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+    if (!work) return res.status(400).json({ message: "Work data required" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const profile = await Profile.findOne({ userId: user._id });
+    profile.pastWork.push(work);
+    await profile.save();
+
+    return res.json({ message: "Work history added", profile });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+export const addEducation = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    const { education } = req.body; // education = { school, degree, field, startYear, endYear, description }
+    if (!token) return res.status(401).json({ message: "User not logged in" });
+    if (!education) return res.status(400).json({ message: "Education data required" });
+
+    const user = await User.findOne({ token });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const profile = await Profile.findOne({ userId: user._id });
+    profile.education.push(education);
+    await profile.save();
+
+    return res.json({ message: "Education added", profile });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
