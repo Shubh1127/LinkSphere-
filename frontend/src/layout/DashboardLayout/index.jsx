@@ -1,13 +1,30 @@
 import { setTokenIsThere } from "@/config/redux/reducer/authReducer";
 import { getAllUsers } from "@/config/redux/action/authAction";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 export default function DashboardLayout({ children, token }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { topProfiles } = useSelector((s) => s.auth || {});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check screen size on mount and resize
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkIsMobile);
+    };
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -18,17 +35,75 @@ export default function DashboardLayout({ children, token }) {
 
   useEffect(() => {
     if (!topProfiles || topProfiles.length === 0) {
-      dispatch(getAllUsers()); // make sure this action exists in your project
+      dispatch(getAllUsers());
     }
   }, [dispatch, topProfiles]);
 
   return (
-    <div className=" flex  w-full mt-5 gap-2">
-      <div className="homeContainer ">
-        <div className="homeContainer_leftBar flex items-start ps-6 py-2  flex-col gap-4 w-[15vw] sticky top-15 h-max ">
+    <div className="flex flex-col lg:flex-row w-full mt-5 gap-2 relative">
+      {/* Mobile Navigation Toggle */}
+      {isMobile && (
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md lg:hidden"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            />
+          </svg>
+        </button>
+      )}
+
+      {/* Sidebar - Hidden on mobile unless toggled */}
+      <div
+        className={`homeContainer ${
+          isMobile
+            ? isSidebarOpen
+              ? "fixed inset-0 z-40 bg-white pt-12"
+              : "hidden"
+            : ""
+        }`}
+      >
+        <div className="homeContainer_leftBar flex items-start ps-6 py-2 flex-col gap-4 lg:w-[15vw] sticky top-15 h-max">
+          {/* Close button for mobile sidebar */}
+          {isMobile && (
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="absolute top-2 right-4 p-1"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+
           <div
-            onClick={() => router.push("/dashboard")}
-            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out"
+            onClick={() => {
+              router.push("/dashboard");
+              if (isMobile) setIsSidebarOpen(false);
+            }}
+            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out text-sm lg:text-base"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -36,7 +111,7 @@ export default function DashboardLayout({ children, token }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6"
+              className="size-5 lg:size-6"
             >
               <path
                 strokeLinecap="round"
@@ -47,8 +122,11 @@ export default function DashboardLayout({ children, token }) {
             Home
           </div>
           <div
-            onClick={() => router.push("/discover")}
-            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out"
+            onClick={() => {
+              router.push("/discover");
+              if (isMobile) setIsSidebarOpen(false);
+            }}
+            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out text-sm lg:text-base"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -56,7 +134,7 @@ export default function DashboardLayout({ children, token }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6"
+              className="size-5 lg:size-6"
             >
               <path
                 strokeLinecap="round"
@@ -67,8 +145,11 @@ export default function DashboardLayout({ children, token }) {
             Discover
           </div>
           <div
-            onClick={() => router.push("/my_connections")}
-            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out"
+            onClick={() => {
+              router.push("/my_connections");
+              if (isMobile) setIsSidebarOpen(false);
+            }}
+            className="flex gap-2 cursor-pointer scale-100 hover:scale-110 transition-transform duration-200 ease-in-out text-sm lg:text-base"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +157,7 @@ export default function DashboardLayout({ children, token }) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6"
+              className="size-5 lg:size-6"
             >
               <path
                 strokeLinecap="round"
@@ -88,45 +169,60 @@ export default function DashboardLayout({ children, token }) {
           </div>
         </div>
       </div>
-      <div className="feedContainer  flex-1">{children}</div>
-      <div className="h-max flex flex-col   flex-[0.5] ms-13 justify-between">
-        <h1 className="font-semibold mb-2 ms-2">Top Profiles</h1>
-        {authState.all_profiles_fetched &&
-          authState.all_users
-            .filter(
-              (profile) => profile.userId?._id !== authState?.user?.userId?._id
-            )
-            .map((profile) => {
-              return (
-                <div key={profile.userId?._id}>
-                  <div
-                    onClick={() =>
-                      router.push(`/u/${profile.userId?.username}`)
-                    }
-                    className="w-max p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-110 transition-transform duration-75 ease-in-out"
-                  >
-                    {profile.userId?.profilePicture ? (
-                      <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                        alt="Default Profile"
-                        className="w-8 h-8 rounded-full"
-                      />
-                    ) : (
-                      <img
-                        src={profile.userId?.profilePicture}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full"
-                      />
-                    )}
-                    <p>{profile.userId.name}</p>
-                    <p className="text-sm text-gray-500">
-                      @{profile.userId?.username}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+
+      {/* Main Content */}
+      <div className="feedContainer flex-1 px-2 lg:px-0 mt-12 lg:mt-0">
+        {children}
       </div>
+
+      {/* Right Sidebar - Hidden on mobile, shown on tablet and desktop */}
+      {!isMobile && (
+        <div className="h-max flex flex-col flex-[0.5] ms-13 justify-between mt-4 lg:mt-0 px-2 lg:px-0">
+          <h1 className="font-semibold mb-2 ms-2 text-sm lg:text-base">
+            Top Profiles
+          </h1>
+          {authState.all_profiles_fetched &&
+            authState.all_users
+              .filter(
+                (profile) =>
+                  profile.userId?._id !== authState?.user?.userId?._id
+              )
+              .map((profile) => {
+                return (
+                  <div key={profile.userId?._id} className="mb-2">
+                    <div
+                      onClick={() =>
+                        router.push(`/u/${profile.userId?.username}`)
+                      }
+                      className="w-full p-1 px-2 rounded-lg flex items-center gap-2 hover:bg-gray-200 cursor-pointer scale-100 hover:scale-105 transition-transform duration-75 ease-in-out"
+                    >
+                      {profile.userId?.profilePicture ? (
+                        <img
+                          src={profile.userId?.profilePicture}
+                          alt="Profile"
+                          className="w-6 h-6 lg:w-8 lg:h-8 rounded-full"
+                        />
+                      ) : (
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                          alt="Default Profile"
+                          className="w-6 h-6 lg:w-8 lg:h-8 rounded-full"
+                        />
+                      )}
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:gap-2">
+                        <p className="text-xs lg:text-sm">
+                          {profile.userId?.name}
+                        </p>
+                        <p className="text-xs text-gray-500 lg:text-sm">
+                          @{profile.userId?.username}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+        </div>
+      )}
     </div>
   );
 }
