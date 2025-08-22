@@ -28,8 +28,7 @@ router
 
 router 
 .route('/update_profile_picture')
-.post(upload.single('profile_picture'),uploadProfilePicture)
-
+.post(upload.single('profile_picture'), uploadProfilePicture)
 
 router
 .route("/user_update")
