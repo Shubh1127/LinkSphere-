@@ -7,6 +7,7 @@ import { logoutUser } from "@/config/redux/action/authAction";
 const NavbarComponent = ({ token }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const authState = useSelector((state) => state.auth);
@@ -105,36 +106,37 @@ const NavbarComponent = ({ token }) => {
               ref={dropdownRef}
             >
               <img
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
                 src={`${BASE_URL}/${displayUser?.profilePicture || "default.jpg"}`}
                 alt="Profile"
                 className="w-8 h-8 rounded-full cursor-pointer object-cover"
               />
-              {isOpen && (
-                <div className="absolute top-10 right-0 w-max p-2 bg-white border rounded-md shadow-lg z-50">
-                  <div className="flex gap-2 items-center hover:bg-gray-100 p-2 rounded cursor-pointer transition-colors">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
-                      />
-                    </svg>
-
-                    <button
-                      onClick={handleLogout}
-                      className="text-red-500 cursor-pointer text-sm"
-                    >
-                      Logout
-                    </button>
-                  </div>
+              {showProfileMenu && (
+                <div className="absolute top-10 right-0 w-40 p-2 bg-white border rounded-md shadow-lg z-50 flex flex-col gap-2">
+                  <button
+                    className="text-left px-3 py-2 hover:bg-gray-100 rounded transition-colors"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push(`/u/${displayUser?.username}`);
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    className="text-left px-3 py-2 hover:bg-gray-100 rounded transition-colors"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push("/settings");
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    className="text-left px-3 py-2 hover:bg-red-100 rounded text-red-500 transition-colors"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
@@ -168,36 +170,37 @@ const NavbarComponent = ({ token }) => {
               ref={dropdownRef}
             >
               <img
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
                 src={`${BASE_URL}/${displayUser?.profilePicture || "default.jpg"}`}
                 alt="Profile"
                 className="w-8 h-8 rounded-full cursor-pointer object-cover"
               />
-              {isOpen && (
-                <div className="absolute top-10 right-0 w-max p-2 bg-white border rounded-md shadow-lg z-50">
-                  <div className="flex gap-2 items-center hover:bg-gray-100 p-2 rounded cursor-pointer transition-colors">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
-                      />
-                    </svg>
-
-                    <button
-                      onClick={handleLogout}
-                      className="text-red-500 cursor-pointer text-sm"
-                    >
-                      Logout
-                    </button>
-                  </div>
+              {showProfileMenu && (
+                <div className="absolute top-10 right-0 w-40 p-2 bg-white border rounded-md shadow-lg z-50 flex flex-col gap-2">
+                  <button
+                    className="text-left px-3 py-2 hover:bg-gray-100 rounded transition-colors"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push(`/u/${displayUser?.username}`);
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    className="text-left px-3 py-2 hover:bg-gray-100 rounded transition-colors"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push("/settings");
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    className="text-left px-3 py-2 hover:bg-red-100 rounded text-red-500 transition-colors"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
