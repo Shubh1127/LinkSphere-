@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 app.use(cookieParser());
 app.use(cors({
-  origin:"http://localhost:3000" || process.env.FRONTEND_URL,
+  origin:["https://link-sphere-beta.vercel.app", "http://localhost:3000", process.env.FRONTEND_URL],
   credentials:true,
   methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
 }));
