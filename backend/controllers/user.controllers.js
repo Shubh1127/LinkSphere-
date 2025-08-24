@@ -104,8 +104,8 @@ export const login = async (req, res) => {
     await User.updateOne({ _id: user._id }, { token, tokenExpiresAt });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Set to true in production
-      sameSite: "lax",
+      secure: true, // Set to true in production
+      sameSite: "none",
       maxAge: 90 * 24 * 60 * 60 * 1000, //90 days
     });
     console.log(req.cookies);
