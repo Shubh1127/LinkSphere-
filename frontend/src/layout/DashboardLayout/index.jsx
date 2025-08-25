@@ -28,7 +28,7 @@ export default function DashboardLayout({ children, token }) {
 
   useEffect(() => {
     if (!router.isReady) return;
-    if (token === undefined) return;
+    if (typeof token === "undefined") return;
     if (!token) router.push("/");
     else dispatch(setTokenIsThere());
   }, [token, router.isReady, dispatch]);
