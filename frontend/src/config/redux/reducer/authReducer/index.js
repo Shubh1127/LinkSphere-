@@ -13,7 +13,7 @@ import {
 } from "../../action/authAction/index";
 
 const initialState = {
-  user: [],
+  user: null,              // was []
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -21,8 +21,8 @@ const initialState = {
   loggedIn: false,
   isTokenThere: false,
   connections: [],
-  connectionRequest: [],     // incoming pending (senderId populated)
-  outgoingRequests: [],      // NEW: my pending sent (receiverId populated)
+  connectionRequest: [],
+  outgoingRequests: [],
   connectionUpdating: false,
   all_profiles_fetched: false,
 };
@@ -32,18 +32,10 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     reset: () => initialState,
-    handleLoginUser: (state) => {
-      state.message = "hello";
-    },
-    emptyMessage: (state) => {
-      state.message = "";
-    },
-    setTokenIsThere: (state) => {
-      state.isTokenThere = true;
-    },
-    setTokenIsNotThere: (state) => {
-      state.isTokenThere = false;
-    },
+    handleLoginUser: (state) => { state.message = "hello"; },
+    emptyMessage: (state) => { state.message = ""; },
+    setTokenIsThere: (state) => { state.isTokenThere = true; },
+    setTokenIsNotThere: (state) => { state.isTokenThere = false; },
   },
   extraReducers: (builder) => {
     builder
@@ -56,32 +48,32 @@ const authSlice = createSlice({
         state.isError = false;
         state.loggedIn = true;
         state.isSuccess = true;
-        state.user = action.payload;
-        state.message = "login successful";
+        state.user = action.payload.user;  // backend returns { message, user }
+        state.message = action.payload.message || "login successful";
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
-        state.message = action.payload;
+        state.loggedIn = false;
+        state.message = action.payload?.message || "Login failed";
       })
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.message = "Registering user";
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading == false;
+        state.isLoading = false;           // FIX (was ==)
         state.isError = false;
         state.isSuccess = true;
-        state.loggedIn = false;
-        state.message = "Registration successful";
-        state.user = action.payload;
+        state.loggedIn = false;            // remains logged out until login
+        state.message = action.payload.message || "Registration successful";
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
-        state.message = action.payload;
+        state.message = action.payload?.message || "Registration failed";
       })
       .addCase(getAboutUser.pending, (state) => {
         state.isLoading = true;
@@ -91,14 +83,17 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
-        state.user = action.payload;
+        state.user = action.payload;       // whatever shape you return
+        state.loggedIn = true;             // HYDRATE login on refresh
         state.message = "User data fetched successfully";
       })
       .addCase(getAboutUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;
-        state.message = action.payload.message || "Failed to fetch user data";
+        state.loggedIn = false;
+        state.user = null;
+        state.message = action.payload?.message || "Failed to fetch user data";
       })
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
@@ -109,7 +104,7 @@ const authSlice = createSlice({
         state.isError = false;
         state.isSuccess = true;
         state.loggedIn = false;
-        state.user = [];
+        state.user = null;
         state.message = "Logout successful";
       })
       .addCase(logoutUser.rejected, (state, action) => {

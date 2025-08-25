@@ -2,22 +2,37 @@ import UserLayout from "@/layout/UserLayout/UserPage";
 import Head from "next/head";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 
-export async function getServerSideProps({ req }) {
-  const token = req.cookies?.token;
-  if (token) {
-    return {
-      redirect: {
-        destination: "/dashboard",
-        permanent: false,
-      },
-    };
-  }
-  return { props: {} };
+
+export async function getServerSideProps({req}){
+  const token=req.cookies?.token || null;
+  return {props:token}
 }
 
-export default function Home() {
+
+export default function Home({props:token}) {
+  const dispatch=useDispatch();
+  const authState = useSelector((s) => s.auth);
   const router = useRouter();
+
+  useEffect(()=>{
+    if(!authState.loggedIn && token){
+      dispatch(getAboutUser());
+      // console.log("User is not logged in but token is present");
+    }
+  }, [authState.loggedIn, dispatch, token]);
+
+  useEffect(() => {
+    console.log("Checking if user is logged in");
+    console.log("authState:", authState);
+    if (authState.loggedIn) {
+      console.log("User is logged in");
+      router.push("/dashboard");
+    }
+  }, [authState.loggedIn, router]);
+
   return (
     <UserLayout>
       <Head>

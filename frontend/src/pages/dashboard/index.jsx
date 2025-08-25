@@ -18,15 +18,15 @@ import DashboardLayout from "@/layout/DashboardLayout";
 import { BASE_URL } from "@/config";
 
 export async function getServerSideProps({ req }) {
-  const token = req.cookies?.token;
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+  const token = req.cookies?.token || null;
+  // if (!token) {
+  //   return {
+  //     redirect: {
+  //       destination: "/",
+  //       permanent: false,
+  //     },
+  //   };
+  // }
   return { props: { token } };
 }
 
@@ -39,6 +39,7 @@ const Dashboard = ({ token }) => {
 
   useEffect(() => {
     if (token) {
+      console.log("Token is present");
       setTokenIsThere(true);
     }
   }, [token]);
@@ -129,7 +130,26 @@ const Dashboard = ({ token }) => {
     };
   }, [popupPost]);
 
-  if (authState.user.length !== 0) {
+  // useEffect(() => {
+  //   console.log("dashboard side authState checking isloggedIN",authState,authState.loggedIn);
+  //   // If SSR token is missing AND Redux user is not logged in, redirect
+  //   if (!token && (!authState.loggedIn || !authState.user || authState.user.length === 0)) {
+  //     router.push("/");
+  //   }
+  // }, [token, authState.loggedIn, authState.user, router]);
+
+  // useEffect(() => {
+  //   // If no user yet but token exists, fetch user
+  //   if (token && !authState.user && !authState.isLoading) {
+  //     dispatch(getAboutUser());
+  //   }
+  //   // If no token and not loading, push home
+  //   if (!token && !authState.isLoading) {
+  //     router.push("/");
+  //   }
+  // }, [token, authState.user, authState.isLoading, dispatch, router]);
+
+  if (authState?.user?.length !== 0) {
     return (
       <UserLayout token={token}>
         <DashboardLayout token={token}>

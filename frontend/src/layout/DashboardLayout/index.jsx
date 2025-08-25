@@ -4,23 +4,23 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export async function getServerSideProps({ req }) {
-  const token = req.cookies.token || null;
+// export async function getServerSideProps({ req }) {
+//   const token = req.cookies.token || null;
 
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+//   if (!token) {
+//     return {
+//       redirect: {
+//         destination: "/",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  return { props: { token } };
-}
+//   return { props: { token } };
+// }
 
 
-export default function DashboardLayout({ children, token }) {
+export default function DashboardLayout({ children }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -43,12 +43,12 @@ export default function DashboardLayout({ children, token }) {
   }, []);
 
   useEffect(() => {
-    console.log("redirectng to dashboard",token);
+    // console.log("redirectng to dashboard",token);
     if (!router.isReady) return;
-    if (typeof token === "undefined") return;
-    if (!token) router.push("/");
+    // if (typeof token === "undefined") return;
+    // if (!token) router.push("/");
     else dispatch(setTokenIsThere());
-  }, [token, router.isReady, dispatch]);
+  }, [ router.isReady, dispatch]);
 
   useEffect(() => {
     if (!topProfiles || topProfiles.length === 0) {

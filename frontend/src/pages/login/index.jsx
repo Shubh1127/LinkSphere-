@@ -6,18 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { loginUser, registerUser } from "@/config/redux/action/authAction";
 import { emptyMessage } from "@/config/redux/reducer/authReducer";
 
-export async function getServerSideProps({ req }) {
-  const token = req.cookies?.token;
-  if (token) {
-    return {
-      redirect: {
-        destination: "/dashboard",
-        permanent: false,
-      },
-    };
-  }
-  return { props: {} };
-}
+
 
 function LoginComponent() {
   const authState = useSelector((state) => state.auth);
@@ -33,7 +22,10 @@ function LoginComponent() {
 
   useEffect(() => {
     if (authState.loggedIn) {
-      router.push("/dashboard");
+      console.log("checking authState",authState.loggedIn);
+      // token? console.log("token exists") : console.log("token does not exist");
+      window.location.href="/dashboard"
+      // router.push("/dashboard");
     }
   }, [authState.loggedIn]);
 

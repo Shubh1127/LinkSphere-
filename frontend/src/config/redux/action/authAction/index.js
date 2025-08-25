@@ -2,37 +2,36 @@ import { clientServer } from "@/config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 
-export const loginUser=createAsyncThunk(
-    "user/login",
-    async (user,thunkAPI)=>{
-        try{
-            const response=await clientServer.post("/login",{
-                identifier:user.identifier,
-                password:user.password,
-            })
-                        return thunkAPI.fulfillWithValue(response.data.message);
-
-        }catch(err){
-            return thunkAPI.rejectWithValue(err.response.data)
-
-        }
+export const loginUser = createAsyncThunk(
+  "user/login",
+  async (user, thunkAPI) => {
+    try {
+      const response = await clientServer.post("/login", {
+        identifier: user.identifier,
+        password: user.password,
+      });
+      return thunkAPI.fulfillWithValue(response.data); // <-- Return full data!
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
     }
-)
-export const registerUser=createAsyncThunk(
-    "user/register",
-    async (user,thunkAPI)=>{
-        try{
-            const response=await clientServer.post("/register",{
-                username:user.username,
-                name:user.name,
-                email:user.email,
-                password:user.password,
-            })
-        }catch(err){
-            return thunkAPI.rejectWithValue(err.response.data)
-        }
+  }
+);
+export const registerUser = createAsyncThunk(
+  "user/register",
+  async (user, thunkAPI) => {
+    try {
+      const response = await clientServer.post("/register", {
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+      });
+      return thunkAPI.fulfillWithValue(response.data);
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
     }
-)
+  }
+);
 
 export const getAboutUser=createAsyncThunk(
     "user/getAboutUser",
