@@ -4,6 +4,22 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+export async function getServerSideProps({ req }) {
+  const token = req.cookies.token || null;
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return { props: { token } };
+}
+
+
 export default function DashboardLayout({ children, token }) {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
