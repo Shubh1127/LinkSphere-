@@ -43,6 +43,7 @@ export default function DashboardLayout({ children, token }) {
   }, []);
 
   useEffect(() => {
+    console.log("redirectng to dashboard",token);
     if (!router.isReady) return;
     if (typeof token === "undefined") return;
     if (!token) router.push("/");
