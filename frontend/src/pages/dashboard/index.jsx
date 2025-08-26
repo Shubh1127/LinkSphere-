@@ -17,20 +17,8 @@ import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { BASE_URL } from "@/config";
 
-export async function getServerSideProps({ req }) {
-  const token = req.cookies?.token || null;
-  // if (!token) {
-  //   return {
-  //     redirect: {
-  //       destination: "/",
-  //       permanent: false,
-  //     },
-  //   };
-  // }
-  return { props: { token } };
-}
 
-const Dashboard = ({ token }) => {
+const Dashboard = () => {
   const authState = useSelector((state) => state.auth);
   const postState = useSelector((state) => state.posts);
   const [isTokenThere, setTokenIsThere] = React.useState(false);
@@ -38,11 +26,27 @@ const Dashboard = ({ token }) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (token) {
-      console.log("Token is present");
-      setTokenIsThere(true);
+    const getUser=async()=>{
+      if(!authState.loggedIn && !authState.user){
+        const res = await fetch(`${BASE_URL}/user/public_profile/me`, {
+          headers: {
+            Cookie: req.headers.cookie, // forward raw cookie
+          },
+          credentials: "include",
+        });
+        if(res.user.token){
+          setTokenIsThere(true);
+          authState.loggedIn(true);
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          user = data.user;
+        }
+      }
     }
-  }, [token]);
+    getUser();
+  }, [authState.loggedIn, authState.user]);
 
   const [postContent, setPostContent] = useState("");
   const [fileContent, setFileContent] = useState();
@@ -151,8 +155,8 @@ const Dashboard = ({ token }) => {
 
   if (authState?.user?.length !== 0) {
     return (
-      <UserLayout token={token}>
-        <DashboardLayout token={token}>
+      <UserLayout >
+        <DashboardLayout >
           <div className="scrollComponent flex flex-col justify-center items-center w-full px-2 md:px-0">
             {/* Create Post Container - Responsive */}
             <div className="createPostContainer flex w-full md:w-[80%] bg-pink-50 rounded-xl p-3 md:p-4 gap-3 md:gap-4">

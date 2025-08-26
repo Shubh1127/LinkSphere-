@@ -4,27 +4,49 @@ import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
+import { getAboutUser } from "@/config/redux/action/authAction";
+import { BASE_URL } from "@/config";
+import { setTokenIsNotThere, setTokenIsThere } from "@/config/redux/reducer/authReducer";
 
 
-export async function getServerSideProps({req}){
-  const token=req.cookies?.token || null;
-  return {props:token}
+
+export async function getServerSideProps({ req }) {
+  let user = null;
+
+  // Always forward the cookie header if it exists
+  if (req.headers.cookie) {
+    const res = await fetch(`${BASE_URL}/user/public_profile/me`, {
+      headers: {
+        Cookie: req.headers.cookie, // forward raw cookie
+      },
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      user = data.user;
+    }
+  }
+
+  return { props: { user } };
 }
 
 
-export default function Home({props:token}) {
-  const dispatch=useDispatch();
+export default function Home({ user }) {
+  const dispatch = useDispatch();
   const authState = useSelector((s) => s.auth);
   const router = useRouter();
 
-  useEffect(()=>{
-    if(!authState.loggedIn && token){
+  useEffect(() => {
+    console.log("home page user", user);
+    if (!authState.loggedIn && user) {
       dispatch(getAboutUser());
       // console.log("User is not logged in but token is present");
     }
-  }, [authState.loggedIn, dispatch, token]);
+  }, [authState.loggedIn, dispatch, user]);
 
   useEffect(() => {
+    console.log("getting user data",user)
     console.log("Checking if user is logged in");
     console.log("authState:", authState);
     if (authState.loggedIn) {
@@ -32,6 +54,14 @@ export default function Home({props:token}) {
       router.push("/dashboard");
     }
   }, [authState.loggedIn, router]);
+
+  useEffect(()=>{
+    if(user?.token){
+
+      setTokenIsThere(true);
+      authState.loggedIn(true);
+    }
+  }, [user, authState]);
 
   return (
     <UserLayout>
