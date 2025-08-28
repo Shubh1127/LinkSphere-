@@ -3,6 +3,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { clientServer, BASE_URL } from "@/config";
 import { logoutUser } from "@/config/redux/action/authAction";
+export async function getServerSideProps({ req }) {
+  const token = req.cookies?.token || null;
+  return { props: { token } };
+}
 
 const NavbarComponent = ({ token }) => {
   const [isOpen, setIsOpen] = useState(false);

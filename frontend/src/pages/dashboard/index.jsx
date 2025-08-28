@@ -15,38 +15,32 @@ import {
 } from "@/config/redux/action/postAction";
 import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
-import { BASE_URL } from "@/config";
+import { BASE_URL ,clientServer} from "@/config";
 
+export async function getServerSideProps({ req }) {
+  const token = req.cookies?.token || null;
+  return { props: { token } };
+}
 
-const Dashboard = () => {
+const Dashboard = ({ token }) => {
   const authState = useSelector((state) => state.auth);
   const postState = useSelector((state) => state.posts);
   const [isTokenThere, setTokenIsThere] = React.useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
+  console.log("token in dashboard",token)
+
+  useEffect(()=>{
+    if(!token){
+      router.push('/');
+    }
+  }, [token, router]);
 
   useEffect(() => {
-    const getUser=async()=>{
-      if(!authState.loggedIn && !authState.user){
-        const res = await fetch(`${BASE_URL}/user/public_profile/me`, {
-          headers: {
-            Cookie: req.headers.cookie, // forward raw cookie
-          },
-          credentials: "include",
-        });
-        if(res.user.token){
-          setTokenIsThere(true);
-          authState.loggedIn(true);
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          user = data.user;
-        }
-      }
+    if (token) {
+      setTokenIsThere(true);
     }
-    getUser();
-  }, [authState.loggedIn, authState.user]);
+  }, [token]);
 
   const [postContent, setPostContent] = useState("");
   const [fileContent, setFileContent] = useState();

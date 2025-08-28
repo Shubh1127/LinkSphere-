@@ -9,20 +9,26 @@ import {
   getMyConnections,
   acceptConnectionRequest,
 } from "@/config/redux/action/authAction";
+import { Router } from "lucide-react";
+import { useRouter } from "next/router";
 
 export async function getServerSideProps({ req }) {
   const token = req.cookies?.token || null;
-  // if (!token) {
-  //   return { redirect: { destination: "/", permanent: false } };
-  // }
   return { props: { token } };
 }
 
 export default function MyConnections({ token }) {
+  const router=useRouter();
   console.log("token in my connections:", token);
   const dispatch = useDispatch();
   const auth = useSelector((s) => s.auth || {});
   const meId = auth?.user?.userId?._id;
+
+  useEffect(()=>{
+    if(!token){
+      Router.push('/');
+    }
+  })
 
   const pending = auth.connectionRequest || [];
   const connections = auth.connections || [];

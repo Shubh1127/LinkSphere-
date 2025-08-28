@@ -4,6 +4,7 @@ import UserLayout from "@/layout/UserLayout/UserPage";
 import DashboardLayout from "@/layout/DashboardLayout";
 import { clientServer, BASE_URL } from "@/config";
 import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "@/config/redux/reducer/authReducer";
 import {
   sendConnectionRequest,
   getMyConnectionRequests,
@@ -37,12 +38,38 @@ const SectionCard = ({ title, children }) => (
 export default function PublicProfile({ token }) {
   const router = useRouter();
   const { username } = router.query;
+  const authState = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+useEffect(() => {
+  async function getUser() {
+    try {
+      const res = await clientServer.get("/user/public_profile/me", {
+        withCredentials: true,
+      });
+      if (res?.data?.user) {
+        // update redux state instead of mutating
+        dispatch(setUser(res.data.user));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  getUser();
+}, [dispatch]);
+
+const authUser = authState.user;
+// console.log(authUser);
 
   const [info, setInfo] = useState(null); // { user, profile }
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
-  const { connectionRequest, connections, outgoingRequests, connectionUpdating } = useSelector((s) => s.auth || {});
+  // const dispatch = useDispatch();
+  const {
+    connectionRequest,
+    connections,
+    outgoingRequests,
+    connectionUpdating,
+  } = useSelector((s) => s.auth || {});
   const [requested, setRequested] = useState(false); // optimistic outgoing flag
   const myId = null; // optional if you need it from auth
 
@@ -107,8 +134,11 @@ export default function PublicProfile({ token }) {
     const b = String(r.receiverId?._id);
     return a === profileUserId || b === profileUserId;
   });
+  // console.log(profileUserId,incomingFromThisUser,connectionRequest)
   const outgoingToThisUser = outgoingRequests?.find?.(
-    (r) => String(r.receiverId?._id || r.receiverId) === profileUserId && (r.status_accepted === null || r.status_accepted === false)
+    (r) =>
+      String(r.receiverId?._id || r.receiverId) === profileUserId &&
+      (r.status_accepted === null || r.status_accepted === false)
   );
 
   return (
@@ -142,49 +172,67 @@ export default function PublicProfile({ token }) {
                     )}
                   </div>
                   <div className="flex gap-2 mt-12 items-end ms-12 ">
-                    {connectedWithThisUser ? (
-                      <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
-                        Connected
-                      </button>
-                    ) : incomingFromThisUser ? (
+                    {authUser && authUser._id === profileUserId ? null : (
                       <>
-                        <button
-                          className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
-                          disabled={connectionUpdating}
-                          onClick={() =>
-                            dispatch(acceptConn({ requestId: incomingFromThisUser._id, action_type: "accept" }))
-                              .then(() => dispatch(getMyConnections()))
-                          }
-                        >
-                          Accept
-                        </button>
-                        <button
-                          className="h-max px-3 py-2 rounded-full border text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
-                          disabled={connectionUpdating}
-                          onClick={() =>
-                            dispatch(acceptConn({ requestId: incomingFromThisUser._id, action_type: "reject" }))
-                              .then(() => dispatch(getMyConnectionRequests()))
-                          }
-                        >
-                          Ignore
-                        </button>
+                        {connectedWithThisUser ? (
+                          <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
+                            Connected
+                          </button>
+                        ) : incomingFromThisUser ? (
+                          <>
+                            <button
+                              className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
+                              disabled={connectionUpdating}
+                              onClick={() =>
+                                dispatch(
+                                  acceptConn({
+                                    requestId: incomingFromThisUser._id,
+                                    action_type: "accept",
+                                  })
+                                ).then(() => dispatch(getMyConnections()))
+                              }
+                            >
+                              Accept
+                            </button>
+                            <button
+                              className="h-max px-3 py-2 rounded-full border text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
+                              disabled={connectionUpdating}
+                              onClick={() =>
+                                dispatch(
+                                  acceptConn({
+                                    requestId: incomingFromThisUser._id,
+                                    action_type: "reject",
+                                  })
+                                ).then(() =>
+                                  dispatch(getMyConnectionRequests())
+                                )
+                              }
+                            >
+                              Ignore
+                            </button>
+                          </>
+                        ) : outgoingToThisUser ? (
+                          <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
+                            Requested
+                          </button>
+                        ) : (
+                          <button
+                            className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
+                            disabled={connectionUpdating}
+                            onClick={() =>
+                              dispatch(
+                                sendConnectionRequest({ receiverId: u._id })
+                              )
+                                .unwrap()
+                                .then(() =>
+                                  dispatch(getMySentConnectionRequests())
+                                )
+                            }
+                          >
+                            Connect
+                          </button>
+                        )}
                       </>
-                    ) : outgoingToThisUser ? (
-                      <button className="h-max px-3 py-2 rounded-full border text-sm cursor-default bg-gray-100">
-                        Requested
-                      </button>
-                    ) : (
-                      <button
-                        className="h-max px-3 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 cursor-pointer disabled:opacity-60"
-                        disabled={connectionUpdating}
-                        onClick={() =>
-                          dispatch(sendConnectionRequest({ receiverId: u._id }))
-                            .unwrap()
-                            .then(() => dispatch(getMySentConnectionRequests()))
-                        }
-                      >
-                        Connect
-                      </button>
                     )}
                   </div>
                 </div>

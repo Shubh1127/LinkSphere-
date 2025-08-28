@@ -3,66 +3,37 @@ import Head from "next/head";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
-import { getAboutUser } from "@/config/redux/action/authAction";
-import { BASE_URL } from "@/config";
-import { setTokenIsNotThere, setTokenIsThere } from "@/config/redux/reducer/authReducer";
+import { useEffect ,useState} from "react";
+// import { getAboutUser } from "@/config/redux/action/authAction";
+// import { BASE_URL, clientServer } from "@/config";
+// import { setTokenIsNotThere, setTokenIsThere } from "@/config/redux/reducer/authReducer";
 
 
 
 export async function getServerSideProps({ req }) {
-  let user = null;
-
-  // Always forward the cookie header if it exists
-  if (req.headers.cookie) {
-    const res = await fetch(`${BASE_URL}/user/public_profile/me`, {
-      headers: {
-        Cookie: req.headers.cookie, // forward raw cookie
-      },
-      credentials: "include",
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      user = data.user;
-    }
-  }
-
-  return { props: { user } };
+  const token = req.cookies?.token || null;
+  return { props: { token } };
 }
 
 
-export default function Home({ user }) {
+export default function Home({token}) {
   const dispatch = useDispatch();
   const authState = useSelector((s) => s.auth);
   const router = useRouter();
 
-  useEffect(() => {
-    console.log("home page user", user);
-    if (!authState.loggedIn && user) {
-      dispatch(getAboutUser());
-      // console.log("User is not logged in but token is present");
-    }
-  }, [authState.loggedIn, dispatch, user]);
 
-  useEffect(() => {
-    console.log("getting user data",user)
-    console.log("Checking if user is logged in");
-    console.log("authState:", authState);
-    if (authState.loggedIn) {
-      console.log("User is logged in");
-      router.push("/dashboard");
-    }
-  }, [authState.loggedIn, router]);
 
   useEffect(()=>{
-    if(user?.token){
-
-      setTokenIsThere(true);
-      authState.loggedIn(true);
+    if(token){
+      router.push('/dashboard');
     }
-  }, [user, authState]);
-
+  },[token, router]);
+  useEffect(() => {
+    console.log("getting user token",token)
+    console.log("Checking if user is logged in");
+    console.log("authState:", authState);
+    
+  }, [authState.loggedIn, router]);
   return (
     <UserLayout>
       <Head>
